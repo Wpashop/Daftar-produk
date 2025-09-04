@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daftar Produk WPA Shop</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    h1 { text-align: center; color: green; }
+    input {
+      width: 100%;
+      padding: 8px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #4CAF50; color: white; }
+    tr:hover { background-color: #f1f1f1; }
+  </style>
+</head>
+<body>
+  <h1>Daftar Produk WPA Market</h1>
+
+  <!-- Kolom Pencarian -->
+  <input type="text" id="searchInput" placeholder="Cari produk...">
+
+  <table id="produkTable">
+    <tr>
+      <th>Produk</th>
+      <th>Harga</th>
+      <th>Keterangan</th>
+    </tr>
+    <tr>
+      <td>Beras 5kg</td>
+      <td>Rp 65.000</td>
+      <td>Stok banyak</td>
+    </tr>
+    <tr>
+      <td>Minyak Goreng 1L</td>
+      <td>Rp 15.000</td>
+      <td>Merek Bimoli</td>
+    </tr>
+    <tr>
+      <td>Gula Pasir 1kg</td>
+      <td>Rp 14.000</td>
+      <td>Merek Gulaku</td>
+    </tr>
+    <tr>
+      <td>Telur Ayam 1kg</td>
+      <td>Rp 28.000</td>
+      <td>Stok terbatas</td>
+    </tr>
+    <tr>
+      <td>Kopi Sachet</td>
+      <td>Rp 2.000</td>
+      <td>Per sachet</td>
+    </tr>
+  </table>
+
+  <script>
+    // Fungsi pencarian (hanya berdasarkan nama produk)
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+      let filter = this.value.toLowerCase();
+      let rows = document.querySelectorAll("#produkTable tr");
+
+      for (let i = 1; i < rows.length; i++) { // mulai dari 1 karena baris 0 adalah header
+        let td = rows[i].getElementsByTagName("td")[0]; // kolom produk
+        if (td) {
+          let textValue = td.textContent || td.innerText;
+          if (textValue.toLowerCase().indexOf(filter) > -1) {
+            rows[i].style.display = "";
+          } else {
+            rows[i].style.display = "none";
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
