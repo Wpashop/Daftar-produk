@@ -81,6 +81,24 @@
   </table>
 
   <script>
+    // Fungsi pengurutan A-Z
+    function sortTableAZ() {
+      let table = document.getElementById("produkTable");
+      let rows = Array.from(table.rows).slice(1); // ambil semua baris kecuali header
+
+      rows.sort((a, b) => {
+        let textA = a.cells[0].textContent.trim().toLowerCase();
+        let textB = b.cells[0].textContent.trim().toLowerCase();
+        return textA.localeCompare(textB);
+      });
+
+      // masukkan kembali ke tabel sesuai urutan
+      rows.forEach(row => table.appendChild(row));
+    }
+
+    // Panggil fungsi setelah halaman selesai dimuat
+    window.onload = sortTableAZ;
+
     // Fungsi pencarian (hanya berdasarkan nama produk)
     document.getElementById('searchInput').addEventListener('keyup', function() {
       let filter = this.value.toLowerCase();
