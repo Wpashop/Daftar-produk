@@ -5,117 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Aplikasi Kasir ESC/POS</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 15px;
-      background: #f8f9fa;
-      color: #111;
-    }
-    h2 {
-      text-align: center;
-      margin-bottom: 15px;
-    }
-    .card {
-      background: #fff;
-      padding: 12px;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      margin-bottom: 12px;
-      position: relative;
-    }
-    input, button {
-      width: 90%;
-      padding: 10px;
-      margin-top: 6px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 15px;
-    }
-    button {
-      background: #2563eb;
-      color: #fff;
-      font-weight: bold;
-      border: none;
-    }
-    button:active {
-      background: #1e40af;
-    }
-    table {
-      width: 100%;
-      margin-top: 10px;
-      border-collapse: collapse;
-      font-size: 14px;
-    }
-    th, td {
-      padding: 8px;
-      border-bottom: 1px solid #ddd;
-      text-align: left;
-    }
-    .total {
-      text-align: right;
-      font-weight: bold;
-      margin-top: 10px;
-    }
-    /* Popup suggestion produk */
-    .suggestions {
-      position: absolute;
-      top: 65px;
-      left: 0;
-      right: 0;
-      background: #fff;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      max-height: 250px;
-      overflow-y: auto;
-      z-index: 10;
-      display: none;
-    }
-    .suggestion-item {
-      padding: 8px;
-      border-bottom: 1px solid #eee;
-      font-size: 14px;
-    }
-    .nama-produk {
-      font-weight: bold;
-      margin-bottom: 4px;
-    }
-    .harga-info {
-      font-size: 12px;
-      color: #6b7280;
-      margin-bottom: 6px;
-    }
-    .btn-pilih {
-      display: inline-block;
-      padding: 4px 8px;
-      margin-right: 5px;
-      border-radius: 6px;
-      font-size: 12px;
-      cursor: pointer;
-      color: #fff;
-    }
-    .btn-dos { background: #16a34a; }
-    .btn-ecer { background: #2563eb; }
-    .qty-control {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-    }
-    .btn-qty {
-      background: #e5e7eb;
-      border: none;
-      padding: 2px 6px;
-      border-radius: 6px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-    .title-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    }
+    body {font-family: Arial, sans-serif;margin: 0;padding: 15px;background: #f8f9fa;color: #111;}
+    h2 {text-align: center;margin-bottom: 15px;}
+    .card {background: #fff;padding: 12px;border-radius: 12px;box-shadow: 0 2px 6px rgba(0,0,0,0.1);margin-bottom: 12px;position: relative;}
+    input, button {width: 90%;padding: 10px;margin-top: 6px;border: 1px solid #ccc;border-radius: 4px;font-size: 15px;}
+    button {background: #2563eb;color: #fff;font-weight: bold;border: none;}
+    button:active {background: #1e40af;}
+    table {width: 100%;margin-top: 10px;border-collapse: collapse;font-size: 14px;}
+    th, td {padding: 8px;border-bottom: 1px solid #ddd;text-align: left;}
+    .total {text-align: right;font-weight: bold;margin-top: 10px;}
+    .suggestions {position: absolute;top: 65px;left: 0;right: 0;background: #fff;border: 1px solid #ccc;border-radius: 8px;max-height: 250px;overflow-y: auto;z-index: 10;display: none;}
+    .suggestion-item {padding: 8px;border-bottom: 1px solid #eee;font-size: 14px;}
+    .nama-produk {font-weight: bold;margin-bottom: 4px;}
+    .harga-info {font-size: 12px;color: #6b7280;margin-bottom: 4px;}
+    .isi-info {font-size: 12px;color: #9ca3af;margin-bottom: 6px;}
+    .btn-pilih {display: inline-block;padding: 4px 8px;margin-right: 5px;border-radius: 6px;font-size: 12px;cursor: pointer;color: #fff;}
+    .btn-dos {background: #16a34a;}
+    .btn-ecer {background: #2563eb;}
+    .qty-control {display: flex;align-items: center;justify-content: center;gap: 5px;}
+    .btn-qty {background: #e5e7eb;border: none;padding: 2px 6px;border-radius: 6px;font-size: 14px;cursor: pointer;}
+    .title-bar {display: flex;justify-content: space-between;align-items: center;}
   </style>
 </head>
 <body>
@@ -127,9 +36,7 @@
   </div>
 
   <div class="card">
-    <div class="title-bar">
-      <h3>Keranjang</h3>
-    </div>
+    <div class="title-bar"><h3>Keranjang</h3></div>
     <table id="keranjang">
       <thead>
         <tr>
@@ -147,136 +54,134 @@
     <button onclick="cetakNota()">Cetak Nota</button>
   </div>
 
-  <script>
-    const produkDB = [
-      {id: "P001", nama: "Minyak kita botol", dos: 194000, ecer: 16500},
-      {id: "P002", nama: "Minyak kita refil", dos: 195000, ecer: 16500},
-      {id: "P003", nama: "Gula", sak: 743000, ecer: 15500},
-      {id: "P004", nama: "Minyak kita bantal", dos: 194000, ecer: 16500},
-      {id: "P005", nama: "Kapal api mini", dos: 183000, ecer: 9500},
-      {id: "p006", nama: "Fortun", dos: 217000, ecer: 18500},
-      {id: "007", nama: "Kecap sedap 2000 hijau", dos: 56000, ecer: 1300},
-      {id: "008", nama: "Kecap sedap 2000 merah", dos: 74000, ecer: 1600},
-      {id: "009", nama: "Ekonomi cair 2000", dos: 37500, ecer: 3500},
-      {id: "p010", nama: "Intermie ori", dos: 54000, ecer: 1500},
-      {id: "p011", nama: "Intermie pedas", dos: 53000, ecer: 1500},
-      {id: "giv", nama: "Giv", dos: 183000, ecer: 2600},
-{id: "8998866602563,8998866602549", nama: "Nuvo", dos: 179500, ecer: 2600},
-{id: "harmoni", nama: "Harmoni", dos: 155000, ecer: 2200},
-{id: "s ab", nama: "Mie sedap ab", dos: 104000, ecer: 2700},
-{id: "s gr", nama: "Mie sedap gr", dos: 109500, ecer: 2800},
-{id: "s s", nama: "Mie sedap soto", dos: 104500, ecer: 2700},
-{id: "colek", nama: "Ekonomi colek", dos: 50000, ecer: 1700},
-{id: "s12", nama: "Sukun 12", dos: 204000, ecer: 20500},
-{id: "8999090501042", nama: "Sukun 16", dos: 257000, ecer: 26000},
-{id: "jrsp", nama: "Djarum super", dos: 231000, ecer: 23500},
-{id: "topkcl", nama: "Top murni kecil", dos: 133000, ecer: 7000},
-{id: "oksak", nama: "Oka sak", dos: 170000, ecer: 7500},
-{id: "sdkrea", nama: "Mie sedap korean", dos: 109500, ecer: 2800},
-{id: "Torabk", nama: "Tora bika moka", dos: 189000, ecer: 16000},
-{id: "tpsa", nama: "Tp sasa", dos: 120000, ecer: 8000}
-    ];
+<script>
+  const produkDB = [
+    {id: "P001", nama: "Minyak kita botol", grosir: 194000, ecer: 16500, satuan: "dos", isi: "12 botol"},
+    {id: "P002", nama: "Minyak kita refil", grosir: 194000, ecer: 16500, satuan: "dos", isi: "12 pcs"},
+    {id: "P003", nama: "Gula", grosir: 743000, ecer: 15500, satuan: "sak", isi: "50kg"},
+    {id: "P004", nama: "Rokok Surya 12", grosir: 252500, ecer: 25500, satuan: "slop", isi: "10 bungkus"},
+    {id: "skn12", nama: "Rokok sukun 12", grosir: 204000, ecer: 20500, satuan: "slop", isi: "10 bungkus"},
+    {id: "skn16", nama: "Rokok sukun 16", grosir: 257000, ecer: 26000, satuan: "slop", isi: "10 bungkus"},
+    {id: "skni", nama: "Rokok sukun hijau", grosir: 109000, ecer: 11000, satuan: "slop", isi: "10 bungkus"},
+  {id: "dj76", nama: "Rokok djarum 76", grosir: 153000, ecer: 15500, satuan: "slop", isi: "10 bungkus"},
+  {id: "djr12", nama: "Rokok djarum super", grosir: 231000, ecer: 23500, satuan: "slop", isi: "10 bungkus"},
+  {id: "alm", nama: "Rokok alami", grosir: 94500, ecer: 9500, satuan: "slop", isi: "10 bungkus"},
+  {id: "rkintr", nama: "Rokok inter", grosir: 496000, ecer: 25000, satuan: "slop", isi: "20 bungkus"},
+  {id: "clntx", nama: "Cleantex", grosir: 178000, ecer: 12000, satuan: "dos", isi: "16 botol"},
+ {id: "intmo", nama: "Intermie ori", grosir: 54000, ecer: 1400, satuan: "dos", isi: "40 bungkus"},
+  {id: "intmp", nama: "Intermie pedas", grosir: 53000, ecer: 1400, satuan: "dos", isi: "40 bungkus"},
+  {id: "mss", nama: "Mie sedap soto", grosir: 105000, ecer: 2700, satuan: "dos", isi: "40 bungkus"},
+  {id: "msab", nama: "Mie sedap AB", grosir: 105000, ecer: 2700, satuan: "dos", isi: "40 bungkus"},
+  {id: "msgr", nama: "Mie sedap GR", grosir: 110000, ecer: 2800, satuan: "dos", isi: "40 bungkus"},
+  {id: "inms", nama: "Indomie soto", grosir: 109000, ecer: 2800, satuan: "dos", isi: "40 bungkus"},
+  {id: "inmgr", nama: "Indomie goreng", grosir: 114000, ecer: 2900, satuan: "dos", isi: "40 bungkus"},
+  {id: "mskr", nama: "Mie sedap korean", grosir: 110000, ecer: 2800, satuan: "dos", isi: "40 bungkus"},
+  {id: "tptlp", nama: "Tp tulip", grosir: 166000, ecer: 7000, satuan: "sak", isi: "25kg"},
+  {id: "okas", nama: "Tp oka", grosir: 170000, ecer: 7500, satuan: "sak", isi: "25kg"},
+  {id: "tpckr", nama: "Tp cakra", grosir: 218000, ecer: 9000, satuan: "sak", isi: "25kg"},
+  {id: "tplm", nama: "Tp lencana merah", grosir: 173000, ecer: 7500, satuan: "sak", isi: "25kg"},
+  {id: "trmk", nama: "Tora moka", grosir: 189000, ecer: 16000, satuan: "dos", isi: "12 rtg"},
+  {id: "ks2kmrh", nama: "Kecap sedap 2000 merah", grosir: 74000, ecer: 1600, satuan: "dos", isi: "48 pcs"},
+  {id: "ks2kh", nama: "Kecap sedap 2000 hijau", grosir: 55000, ecer: 1200, satuan: "dos", isi: "48 pcs"}
+  ];
 
-    let keranjang = [];
+  let keranjang = [];
 
-    function cariProduk() {
-      const input = document.getElementById("cariProduk").value.toLowerCase();
-      const suggestionBox = document.getElementById("suggestions");
-      suggestionBox.innerHTML = "";
+  function cariProduk() {
+    const input = document.getElementById("cariProduk").value.toLowerCase();
+    const suggestionBox = document.getElementById("suggestions");
+    suggestionBox.innerHTML = "";
 
-      if (!input) {
-        suggestionBox.style.display = "none";
-        return;
-      }
+    if (!input) { suggestionBox.style.display = "none"; return; }
 
-      const hasil = produkDB.filter(p => p.id.toLowerCase().includes(input) || p.nama.toLowerCase().includes(input));
+    const hasil = produkDB.filter(p => p.id.toLowerCase().includes(input) || p.nama.toLowerCase().includes(input));
 
-      if (hasil.length > 0) {
-        hasil.forEach(p => {
-          const div = document.createElement("div");
-          div.className = "suggestion-item";
-          div.innerHTML = `
-            <div class="nama-produk">${p.nama}</div>
-            <div class="harga-info">dos: Rp ${p.dos.toLocaleString()} | Ecer: Rp ${p.ecer.toLocaleString()}</div>
-            <span class="btn-pilih btn-dos" onclick="tambahKeranjang('${p.id}','dos')">dos</span>
-            <span class="btn-pilih btn-ecer" onclick="tambahKeranjang('${p.id}','ecer')">Ecer</span>
-          `;
-          suggestionBox.appendChild(div);
-        });
-        suggestionBox.style.display = "block";
-      } else {
-        suggestionBox.style.display = "none";
-      }
-    }
-
-    function tambahKeranjang(id, mode) {
-      const produk = produkDB.find(p => p.id === id);
-      if (!produk) return;
-
-      const harga = mode === "dos" ? produk.dos : produk.ecer;
-
-      const index = keranjang.findIndex(item => item.id === id && item.harga === harga);
-      if (index > -1) {
-        keranjang[index].qty += 1;
-      } else {
-        keranjang.push({...produk, qty: 1, harga});
-      }
-
-      renderKeranjang();
-      document.getElementById("cariProduk").value = "";
-      document.getElementById("suggestions").style.display = "none";
-    }
-
-    function updateQty(index, delta) {
-      keranjang[index].qty += delta;
-      if (keranjang[index].qty <= 0) keranjang.splice(index, 1);
-      renderKeranjang();
-    }
-
-    function hapusProduk(index) {
-      keranjang.splice(index, 1);
-      renderKeranjang();
-    }
-
-    function renderKeranjang() {
-      const tbody = document.querySelector("#keranjang tbody");
-      tbody.innerHTML = "";
-      let total = 0;
-      keranjang.forEach((p, i) => {
-        const subtotal = p.harga * p.qty;
-        total += subtotal;
-
-        const mode = (p.harga === p.dos) ? "dos" : "Ecer";
-
-        tbody.innerHTML += `
-          <tr>
-            <td>
-              <div>${p.nama}</div>
-              <div style="font-size:12px;color:#6b7280;">
-                ${mode} @ Rp ${p.harga.toLocaleString()}
-              </div>
-            </td>
-            <td>
-              <div class="qty-control">
-                <button class="btn-qty" onclick="updateQty(${i},-1)">-</button>
-                ${p.qty}
-                <button class="btn-qty" onclick="updateQty(${i},1)">+</button>
-              </div>
-            </td>
-            <td>Rp ${subtotal.toLocaleString()}</td>
-            <td><button onclick="hapusProduk(${i})">X</button></td>
-          </tr>`;
+    if (hasil.length > 0) {
+      hasil.forEach(p => {
+        const div = document.createElement("div");
+        div.className = "suggestion-item";
+        div.innerHTML = `
+          <div class="nama-produk">${p.nama}</div>
+          <div class="harga-info">${p.satuan}: Rp ${p.grosir.toLocaleString()} | Ecer: Rp ${p.ecer.toLocaleString()}</div>
+          <div class="isi-info">Isi: ${p.isi}</div>
+          <span class="btn-pilih btn-dos" onclick="tambahKeranjang('${p.id}','grosir')">${p.satuan}</span>
+          <span class="btn-pilih btn-ecer" onclick="tambahKeranjang('${p.id}','ecer')">Ecer</span>
+        `;
+        suggestionBox.appendChild(div);
       });
-      document.getElementById("total").innerText = total.toLocaleString();
-      hitungKembalian();
+      suggestionBox.style.display = "block";
+    } else {
+      suggestionBox.style.display = "none";
+    }
+  }
+
+  function tambahKeranjang(id, mode) {
+    const produk = produkDB.find(p => p.id === id);
+    if (!produk) return;
+
+    const harga = mode === "grosir" ? produk.grosir : produk.ecer;
+    const label = mode === "grosir" ? produk.satuan : "Ecer";
+
+    const index = keranjang.findIndex(item => item.id === id && item.label === label);
+    if (index > -1) {
+      keranjang[index].qty += 1;
+    } else {
+      keranjang.push({...produk, qty: 1, harga, label});
     }
 
-    function hitungKembalian() {
-      const total = parseInt(document.getElementById("total").innerText.replace(/\./g,'')) || 0;
-      const bayar = parseInt(document.getElementById("uangPembeli").value) || 0;
-      const kembali = bayar - total;
-      document.getElementById("kembalian").innerText = kembali >= 0 ? kembali.toLocaleString() : "0";
-    }
+    renderKeranjang();
+    document.getElementById("cariProduk").value = "";
+    document.getElementById("suggestions").style.display = "none";
+  }
+
+  function updateQty(index, delta) {
+    keranjang[index].qty += delta;
+    if (keranjang[index].qty <= 0) keranjang.splice(index, 1);
+    renderKeranjang();
+  }
+
+  function hapusProduk(index) {
+    keranjang.splice(index, 1);
+    renderKeranjang();
+  }
+
+  function renderKeranjang() {
+    const tbody = document.querySelector("#keranjang tbody");
+    tbody.innerHTML = "";
+    let total = 0;
+    keranjang.forEach((p, i) => {
+      const subtotal = p.harga * p.qty;
+      total += subtotal;
+
+      tbody.innerHTML += `
+        <tr>
+          <td>
+            <div>${p.nama}</div>
+            <div style="font-size:12px;color:#6b7280;">
+              ${p.label} @ Rp ${p.harga.toLocaleString()}
+            </div>
+          </td>
+          <td>
+            <div class="qty-control">
+              <button class="btn-qty" onclick="updateQty(${i},-1)">-</button>
+              ${p.qty}
+              <button class="btn-qty" onclick="updateQty(${i},1)">+</button>
+            </div>
+          </td>
+          <td>Rp ${subtotal.toLocaleString()}</td>
+          <td><button onclick="hapusProduk(${i})">X</button></td>
+        </tr>`;
+    });
+    document.getElementById("total").innerText = total.toLocaleString();
+    hitungKembalian();
+  }
+
+  function hitungKembalian() {
+    const total = parseInt(document.getElementById("total").innerText.replace(/\./g,'')) || 0;
+    const bayar = parseInt(document.getElementById("uangPembeli").value) || 0;
+    const kembali = bayar - total;
+    document.getElementById("kembalian").innerText = kembali >= 0 ? kembali.toLocaleString() : "0";
+  }
 
   async function cetakNota() {
     const encoder = new TextEncoder();
@@ -285,15 +190,15 @@
     nota += esc+"a"+String.fromCharCode(1);
     nota += "WPA SHOP\n";
     nota += "WA : 0852 3480 3820\n";
-
     nota += esc+"a"+String.fromCharCode(0);
     nota += "-----------------------------\n";
+
     keranjang.forEach(p => {
-      const mode = (p.harga === p.dos) ? "dos" : "Ecer";
       nota += `${p.nama.substring(0,30)}\n`;
-      nota += `${p.qty} x ${p.harga.toLocaleString()} (${mode})`;
+      nota += `${p.qty} x ${p.harga.toLocaleString()} (${p.label})`;
       nota += `= Rp ${(p.harga * p.qty).toLocaleString()}\n`;
     });
+
     nota += "-----------------------------\n";
     nota += "TOTAL : Rp "+document.getElementById("total").innerText+"\n";
     nota += "BAYAR : Rp "+(document.getElementById("uangPembeli").value || 0)+"\n";
@@ -303,37 +208,16 @@
     nota += "Terima Kasih\n\n\n\n";
 
     try {
-      // 1. Pilih printer USB (bisa ditambah filter vendorId/productId bila perlu)
-      const device = await navigator.usb.requestDevice({
-        filters: [{}]  // kosong = tampilkan semua perangkat USB
-      });
-
-      // 2. Buka koneksi
+      const device = await navigator.usb.requestDevice({ filters: [{}] });
       await device.open();
-      if (device.configuration === null) {
-        await device.selectConfiguration(1);
-      }
-
-      // 3. Claim interface pertama
+      if (device.configuration === null) await device.selectConfiguration(1);
       const iface = device.configuration.interfaces[0];
       await device.claimInterface(iface.interfaceNumber);
-
-      // 4. Cari endpoint OUT
       let endpointOut = null;
-      iface.alternates[0].endpoints.forEach(ep => {
-        if (ep.direction === "out") {
-          endpointOut = ep.endpointNumber;
-        }
-      });
-
-      if (endpointOut === null) {
-        throw new Error("Endpoint OUT tidak ditemukan");
-      }
-
-      // 5. Kirim data ke printer
+      iface.alternates[0].endpoints.forEach(ep => { if (ep.direction === "out") endpointOut = ep.endpointNumber; });
+      if (endpointOut === null) throw new Error("Endpoint OUT tidak ditemukan");
       const data = encoder.encode(nota);
       await device.transferOut(endpointOut, data);
-
       alert("Nota berhasil dicetak via USB!");
     } catch (err) {
       alert("Gagal mencetak: " + err);
