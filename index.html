@@ -9,10 +9,10 @@
     h2 {text-align: center;margin-bottom: 15px;}
     .card {background: #fff;padding: 12px;border-radius: 12px;box-shadow: 0 2px 6px rgba(0,0,0,0.1);margin-bottom: 12px;position: relative;}
     input, button {width: 90%;padding: 10px;margin-top: 6px;border: 1px solid #ccc;border-radius: 4px;font-size: 15px;}
-    button {background: #2563eb;color: #fff;font-weight: bold;border: none;}
+    button {background: #2563eb;color: #fff;font-weight: bold;border: none;cursor: pointer;}
     button:active {background: #1e40af;}
     table {width: 100%;margin-top: 10px;border-collapse: collapse;font-size: 14px;}
-    th, td {padding: 8px;border-bottom: 1px solid #ddd;text-align: left;}
+    th, td {padding: 8px;border-bottom: 1px solid #ddd;text-align: left;vertical-align: top;}
     .total {text-align: right;font-weight: bold;margin-top: 10px;}
     .suggestions {position: absolute;top: 65px;left: 0;right: 0;background: #fff;border: 1px solid #ccc;border-radius: 8px;max-height: 250px;overflow-y: auto;z-index: 10;display: none;}
     .suggestion-item {padding: 8px;border-bottom: 1px solid #eee;font-size: 14px;}
@@ -25,6 +25,20 @@
     .qty-control {display: flex;align-items: center;justify-content: center;gap: 5px;}
     .btn-qty {background: #e5e7eb;border: none;padding: 2px 6px;border-radius: 6px;font-size: 14px;cursor: pointer;}
     .title-bar {display: flex;justify-content: space-between;align-items: center;}
+    /* Modal Riwayat */
+    .modal {
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;
+    }
+    .modal-content {
+      background: #fff; padding: 15px; border-radius: 10px; max-width: 600px; width: 95%; max-height: 80%;
+      overflow-y: auto;
+    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h3 { margin: 0; }
+    .aksi-btn {padding:4px 8px;margin:2px;border:none;border-radius:6px;font-size:12px;cursor:pointer;}
+    .edit-btn {background:#16a34a;color:#fff;}
+    .hapus-btn {background:#dc2626;color:#fff;}
   </style>
 </head>
 <body>
@@ -54,6 +68,31 @@
     <button onclick="cetakNota()">Cetak Nota</button>
   </div>
 
+  <div class="card">
+    <button onclick="bukaRiwayat()">Riwayat Orderan</button>
+  </div>
+
+  <!-- Modal Riwayat -->
+  <div id="riwayatModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Riwayat Orderan</h3>
+        <button onclick="tutupRiwayat()">X</button>
+      </div>
+      <table id="tabelRiwayat">
+        <thead>
+          <tr>
+            <th>Tanggal</th>
+            <th>Total</th>
+            <th>Detail</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
 <script>
   const produkDB = [
     {id: "P001", nama: "Minyak kita botol", grosir: 194000, ecer: 16500, satuan: "dos", isi: "12 botol"},
@@ -68,7 +107,7 @@
   {id: "alm", nama: "Rokok alami", grosir: 94500, ecer: 9500, satuan: "slop", isi: "10 bungkus"},
   {id: "rkintr", nama: "Rokok inter", grosir: 496000, ecer: 25000, satuan: "slop", isi: "20 bungkus"},
   {id: "clntx", nama: "Cleantex", grosir: 178000, ecer: 12000, satuan: "dos", isi: "16 botol"},
- {id: "intmo", nama: "Intermie ori", grosir: 52500, ecer: 1400, satuan: "dos", isi: "40 bungkus"},
+  {id: "intmo", nama: "Intermie ori", grosir: 52500, ecer: 1400, satuan: "dos", isi: "40 bungkus"},
   {id: "intmp", nama: "Intermie pedas", grosir: 53000, ecer: 1400, satuan: "dos", isi: "40 bungkus"},
   {id: "mss", nama: "Mie sedap soto", grosir: 105000, ecer: 2700, satuan: "dos", isi: "40 bungkus"},
   {id: "msab", nama: "Mie sedap AB", grosir: 105000, ecer: 2700, satuan: "dos", isi: "40 bungkus"},
@@ -94,7 +133,7 @@
   {id: "Sdkaym", nama: "Sedap kaldu ayam", grosir: 128500, ecer: 4500, satuan: "dos", isi: "30 rtg"},
   {id: "sdpksp", nama: "Sedap kaldu sapi", grosir: 128500, ecer: 4500, satuan: "dos", isi: "30 rtg"},
   {id: "kamni", nama: "Kapal api mini", grosir: 183000, ecer: 9500, satuan: "dos", isi: "20 rtg"},
-{id: "frtn", nama: "Fortun", grosir: 217000, ecer: 18500, satuan: "dos", isi: "12 pcs"},
+  {id: "frtn", nama: "Fortun", grosir: 217000, ecer: 18500, satuan: "dos", isi: "12 pcs"},
   {id: "bpc", nama: "Boom", grosir: 96000, ecer: 3000, satuan: "dos", isi: "36 pcs"},
   {id: "sklngm", nama: "Soklin gm", grosir: 96000, ecer: 4100, satuan: "dos", isi: "24 pcs"},
   {id: "msdpkr", nama: "Mie sedap kare", grosir: 105000, ecer: 2700, satuan: "dos", isi: "40 pcs"},
@@ -109,7 +148,7 @@
   {id: "tsbkdm", nama: "Tisu basah kodomo", grosir: 223000, ecer: 10000, satuan: "dos", isi: "24 pcs"},
   {id: "skp320", nama: "Soklin pewangi 5000 320ml", grosir: 89500, ecer: 4000, satuan: "dos", isi: "24 pcs"},
   {id: "tgarn", nama: "Top gula aren", grosir: 196000, ecer: 16500, satuan: "dos", isi: "12 rtg"},
-{id: "kmri", nama: "Kemiri 1kg", grosir: 38000, ecer: 38000, satuan: "kg", isi: "kg"},
+  {id: "kmri", nama: "Kemiri 1kg", grosir: 38000, ecer: 38000, satuan: "kg", isi: "kg"},
   {id: "sektpslp", nama: "Sek topi", grosir: 19500, ecer: 2000, satuan: "slop", isi: "10 ikat"},
   {id: "tppyg", nama: "Tp payung", grosir: 170000, ecer: 7000, satuan: "sak", isi: "25kg"},
   {id: "smprnagakr", nama: "Sampoerna aga", grosir: 156000, ecer: 16000, satuan: "slop", isi: "10 bungkus"},
@@ -129,7 +168,7 @@
   {id: "kmr100g", nama: "Kemiri 100gr", grosir: 4000, ecer: 4000, satuan: "gr", isi: "100gr"},
   {id: "kmr250gr", nama: "Kemiri 250gr", grosir: 10000, ecer: 10000, satuan: "gr", isi: "250gr"},
   {id: "kmri500g", nama: "Kemiri 500gr", grosir: 19500, ecer: 19500, satuan: "gr", isi: "500gr"},
-{id: "mm1/2ons", nama: "Moto mobil rtg 1/2 ons", grosir: 129000, ecer: 13000, satuan: "bal", isi: "10 rtg"},
+  {id: "mm1/2ons", nama: "Moto mobil rtg 1/2 ons", grosir: 129000, ecer: 13000, satuan: "bal", isi: "10 rtg"},
   {id: "sntnpas", nama: "Santanpas", grosir: 111000, ecer: 9500, satuan: "dos", isi: "12 rtg"},
   {id: "indmkc", nama: "Indomilk milky kid C", grosir: 90000, ecer: 2500, satuan: "dos", isi: "40 pcs"},
   {id: "sklnpk", nama: "Soklin pk", grosir: 54000, ecer: 5000, satuan: "dos", isi: "12 rtg"},
@@ -141,10 +180,15 @@
   {id: "kcg1kg", nama: "Kacang 1kg", grosir: 28000, ecer: 28000, satuan: "kg", isi: "1kg"},
   {id: "kcg500g", nama: "Kacang 500gr", grosir: 14500, ecer: 14500, satuan: "gr", isi: "500gr"},
   {id: "kcg250g", nama: "Kacang 250gr", grosir: 7500, ecer: 7500, satuan: "gr", isi: "250gr"},
-{id: "sschc", nama: "Saos chicken", grosir: 167000, ecer: 4500, satuan: "dos", isi: "40 rtg"}
+  {id: "sschc", nama: "Saos chicken", grosir: 167000, ecer: 4500, satuan: "dos", isi: "40 rtg"},
+  {id: "fnt5k", nama: "Fanta 5000", grosir: 45500, ecer: 4000, satuan: "slop", isi: "12 botol"},
+  {id: "sprt5k", nama: "Sprit 5000", grosir: 45500, ecer: 4000, satuan: "slop", isi: "12 botol"},
+  {id: "cc5k", nama: "Coca cola 5.000", grosir: 45500, ecer: 4000, satuan: "slop", isi: "12 botol"},
+  {id: "alhy", nama: "Alahya", grosir: 14500, ecer: 14500, satuan: "dos", isi: "48 gelas"}
   ];
 
   let keranjang = [];
+  let editIndex = null; // index riwayat yang sedang diedit
 
   function cariProduk() {
     const input = document.getElementById("cariProduk").value.toLowerCase();
@@ -242,6 +286,66 @@
     document.getElementById("kembalian").innerText = kembali >= 0 ? kembali.toLocaleString() : "0";
   }
 
+  function bukaRiwayat() {
+    document.getElementById("riwayatModal").style.display = "flex";
+    renderRiwayat();
+  }
+
+  function tutupRiwayat() {
+    document.getElementById("riwayatModal").style.display = "none";
+  }
+
+  function renderRiwayat() {
+    const tbody = document.querySelector("#tabelRiwayat tbody");
+    tbody.innerHTML = "";
+    let riwayat = JSON.parse(localStorage.getItem("riwayatOrder")) || [];
+
+    riwayat.forEach((r, i) => {
+      let detail = r.items.map(p => `${p.qty}x ${p.nama} (${p.label})`).join("<br>");
+      tbody.innerHTML += `
+        <tr>
+          <td>${r.tanggal}</td>
+          <td>Rp ${r.total.toLocaleString()}</td>
+          <td>${detail}</td>
+          <td>
+            <button class="aksi-btn edit-btn" onclick="editRiwayat(${i})">Edit</button>
+            <button class="aksi-btn hapus-btn" onclick="hapusRiwayat(${i})">Hapus</button>
+          </td>
+        </tr>`;
+    });
+  }
+
+  function editRiwayat(index) {
+    let riwayat = JSON.parse(localStorage.getItem("riwayatOrder")) || [];
+    if (!riwayat[index]) return;
+
+    keranjang = [...riwayat[index].items];
+    renderKeranjang();
+
+    editIndex = index;
+    tutupRiwayat();
+
+    alert("Orderan dimuat ke keranjang, silakan edit lalu cetak ulang.");
+  }
+
+  function hapusRiwayat(index) {
+    let riwayat = JSON.parse(localStorage.getItem("riwayatOrder")) || [];
+    riwayat.splice(index, 1);
+    localStorage.setItem("riwayatOrder", JSON.stringify(riwayat));
+    renderRiwayat();
+  }
+
+  function simpanRiwayat(order) {
+    let riwayat = JSON.parse(localStorage.getItem("riwayatOrder")) || [];
+    if (editIndex !== null) {
+      riwayat[editIndex] = order;
+      editIndex = null;
+    } else {
+      riwayat.push(order);
+    }
+    localStorage.setItem("riwayatOrder", JSON.stringify(riwayat));
+  }
+
   async function cetakNota() {
     const encoder = new TextEncoder();
     let esc = "\x1B";
@@ -265,6 +369,16 @@
     nota += "-----------------------------\n";
     nota += esc+"a"+String.fromCharCode(1);
     nota += "Terima Kasih\n\n\n\n";
+
+    // Simpan ke riwayat
+    const order = {
+      tanggal: new Date().toLocaleString(),
+      items: [...keranjang],
+      total: parseInt(document.getElementById("total").innerText.replace(/\./g,'')) || 0,
+      bayar: parseInt(document.getElementById("uangPembeli").value) || 0,
+      kembali: parseInt(document.getElementById("kembalian").innerText.replace(/\./g,'')) || 0
+    };
+    simpanRiwayat(order);
 
     try {
       const device = await navigator.usb.requestDevice({ filters: [{}] });
