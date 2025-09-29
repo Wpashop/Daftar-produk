@@ -3,450 +3,1374 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aplikasi Kasir ESC/POS</title>
+  <title>Aplikasi Kasir</title>
   <style>
-    body {font-family: Arial, sans-serif;margin: 0;padding: 15px;background: #f8f9fa;color: #111;}
-    h2 {text-align: center;margin-bottom: 15px;}
-    .card {background: #fff;padding: 12px;border-radius: 12px;box-shadow: 0 2px 6px rgba(0,0,0,0.1);margin-bottom: 12px;position: relative;}
-    input, button {width: 90%;padding: 10px;margin-top: 6px;border: 1px solid #ccc;border-radius: 4px;font-size: 15px;}
-    button {background: #2563eb;color: #fff;font-weight: bold;border: none;cursor: pointer;}
-    button:active {background: #1e40af;}
-    table {width: 100%;margin-top: 10px;border-collapse: collapse;font-size: 14px;}
-    th, td {padding: 8px;border-bottom: 1px solid #ddd;text-align: left;vertical-align: top;}
-    .total {text-align: right;font-weight: bold;margin-top: 10px;}
-    .suggestions {position: absolute;top: 65px;left: 0;right: 0;background: #fff;border: 1px solid #ccc;border-radius: 8px;max-height: 250px;overflow-y: auto;z-index: 10;display: none;}
-    .suggestion-item {padding: 8px;border-bottom: 1px solid #eee;font-size: 20px;}
-    .nama-produk {font-weight: bold;margin-bottom: 4px;}
-    .harga-info {font-size: 17px;color: #6b7280;margin-bottom: 4px;}
-    .isi-info {font-size: 12px;color: #9ca3af;margin-bottom: 6px;}
-    .btn-pilih {display: inline-block;padding: 4px 8px;margin-right: 50px;border-radius: 6px;font-size: 20px;cursor: pointer;color: #fff;}
-    .btn-dos {background: #16a34a;}
-    .btn-ecer {background: #2563eb;}
-    .qty-control {display: flex;align-items: center;justify-content: center;gap: 5px;}
-    .btn-qty {background: #e5e7eb;border: none;padding: 10px 6px;border-radius: 6px;font-size: 14px;cursor: pointer;}
-    .title-bar {display: flex;justify-content: space-between;align-items: center;}
-    /* Modal Riwayat */
-    .modal {
-      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;
+    body { font-family: Arial, sans-serif; padding: 10px; background: #f7f7f7; }
+    h1 { text-align: center; }
+    .hasilCari, .keranjang, .riwayat { margin-top: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #fff; border-radius: 8px; overflow: hidden; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background: #4caf50; color: white; }
+    tr:nth-child(even) { background: #f9f9f9; }
+    tr:hover { background: #f1f1f1; }
+    button { padding: 5px 10px; cursor: pointer; margin: 2px; border: none; border-radius: 5px; background: #4caf50; color: #fff; }
+    button:hover { background: #43a047; }
+    .total { margin-top: 15px; font-size: 18px; font-weight: bold; }
+    .bayar { margin-top: 10px; }
+    .badge { padding: 2px 6px; border-radius: 5px; color: #fff; font-size: 11px; margin-left: 4px; }
+    .badge-ecer { background: #4caf50; }
+    .badge-karton { background: #2196f3; }
+    .badge-slop { background: #ff9800; }
+    .badge-pak { background: #9c27b0; }
+    .badge-sak { background: #795548; }
+    .badge-bal { background: #607d8b; }
+    input[type="text"], input[type="number"] { padding: 5px; border-radius: 5px; border: 1px solid #ccc; }
+    input[type="number"] { width: 80px; }
+    .uang-rekomendasi { margin-top: 5px; }
+    .uang-rekomendasi button { background: #e0e0e0; color: #000; }
+    .uang-rekomendasi button:hover { background: #ccc; }
+    .produk-varian { font-size: 13px; margin-left: 15px; }
+
+    /* Notifikasi (fade in/out) */
+    .notif-container {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+      max-width: calc(100% - 32px);
     }
-    .modal-content {
-      background: #fff; padding: 15px; border-radius: 10px; max-width: 600px; width: 95%; max-height: 80%;
-      overflow-y: auto;
+    .notif {
+      pointer-events: auto;
+      min-width: 220px;
+      max-width: 420px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+      opacity: 0;
+      transform: translateY(-8px);
+      animation: notifIn 250ms ease forwards;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
     }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; }
-    .modal-header h3 { margin: 0; }
-    .aksi-btn {padding:4px 8px;margin:2px;border:none;border-radius:6px;font-size:12px;cursor:pointer;}
-    .edit-btn {background:#16a34a;color:#fff;}
-    .hapus-btn {background:#dc2626;color:#fff;}
+    .notif .icon { font-weight: 700; width: 20px; text-align: center; }
+    .notif.success { background: linear-gradient(90deg,#4caf50,#43a047); }
+    .notif.error { background: linear-gradient(90deg,#f44336,#e53935); }
+    .notif.info  { background: linear-gradient(90deg,#2196f3,#1e88e5); }
+
+    .notif.fade-out {
+      animation: notifOut 350ms ease forwards;
+    }
+
+    @keyframes notifIn {
+      from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes notifOut {
+      from { opacity: 1; transform: translateY(0) scale(1); }
+      to   { opacity: 0; transform: translateY(-8px) scale(0.98); }
+    }
+
+    /* Responsive tweaks so notif doesn't overflow on small devices */
+    @media (max-width: 420px) {
+      .notif { min-width: 160px; font-size: 13px; padding: 10px; }
+      .notif-container { left: 8px; right: 8px; top: 8px; }
+    }
   </style>
 </head>
 <body>
-  <h2>WPA SHOP GROSIR</h2>
 
-  <div class="card">
-    <input type="text" id="cariProduk" placeholder="Cari produk (Nama/ID)" oninput="cariProduk()">
-    <div id="suggestions" class="suggestions"></div>
+<h1>Aplikasi Kasir</h1>
+
+<input type="text" id="cariProduk" placeholder="Cari produk..." style="width:100%;padding:8px">
+
+<div class="hasilCari">
+  <h2>Hasil Pencarian</h2>
+  <table id="tabelHasil">
+    <thead>
+      <tr>
+        <th>Produk</th>
+        <th>Harga</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<div class="keranjang">
+  <h2>Keranjang</h2>
+  <table id="tabelKeranjang">
+    <thead>
+      <tr>
+        <th>Nama</th>
+        <th>Varian</th>
+        <th>Harga</th>
+        <th>Qty</th>
+        <th>Total</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <div class="total">Total Belanja: Rp <span id="totalBelanja">0</span></div>
+
+  <div class="bayar">
+    <label>Uang Pembeli: Rp 
+      <input type="text" id="uangPembeli" oninput="formatUangPembeli(this)">
+    </label>
+    <div class="uang-rekomendasi" id="uangRekomendasi"></div>
+    <div>Kembalian: Rp <span id="kembalian">0</span></div>
   </div>
 
-  <div class="card">
-    <div class="title-bar"><h3>Keranjang</h3></div>
-    <table id="keranjang">
+  <button onclick="cetakNota()">Cetak Nota</button>
+</div>
+
+<div class="riwayat">
+  <button id="btnRiwayat" onclick="toggleRiwayat()">Riwayat Transaksi</button>
+  <div id="riwayatBox" style="display:none; margin-top:10px;">
+    <h2>Riwayat Transaksi</h2>
+    <table id="tabelRiwayat">
       <thead>
         <tr>
-          <th>Produk</th>
-          <th>Qty</th>
-          <th>Subtotal</th>
+          <th>Tanggal</th>
+          <th>Total</th>
+          <th>Uang</th>
+          <th>Kembali</th>
           <th>Aksi</th>
         </tr>
       </thead>
       <tbody></tbody>
     </table>
-    <div class="total">Total: Rp <span id="total">0</span></div>
-    <input type="number" id="uangPembeli" placeholder="Uang Pembeli" oninput="hitungKembalian()">
-    <div class="total">Kembalian: Rp <span id="kembalian">0</span></div>
-    <button onclick="cetakNota()">Cetak Nota</button>
   </div>
+</div>
 
-  <div class="card">
-    <button onclick="bukaRiwayat()">Riwayat Orderan</button>
-  </div>
+<!-- 🎵 Suara -->
+<audio id="suaraScan" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
+<audio id="suaraGagal" src="https://actions.google.com/sounds/v1/cartoon/boing.ogg"></audio>
 
-  <!-- Modal Riwayat -->
-  <div id="riwayatModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>Riwayat Orderan</h3>
-        <button onclick="tutupRiwayat()">X</button>
-      </div>
-      <table id="tabelRiwayat">
-        <thead>
-          <tr>
-            <th>Tanggal</th>
-            <th>Total</th>
-            <th>Detail</th>
-            <th>Aksi</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
+<!-- Kontainer notifikasi -->
+<div class="notif-container" id="notifContainer" aria-live="polite"></div>
 
 <script>
-  const produkDB = [
-    {id: "8998866109222", nama: "Barakat pasta gigi 75gr", grosir: 3000, ecer: 3000, satuan: "1 Pcs", isi: "1 Pcs"},
-  {id: "Prtxu5", nama: "Protex ungu 5p", grosir: 109000, ecer: 2400, satuan: "dos", isi: "48 pak"},
-  {id: "Rkyt800", nama: "Minyak rakyat 800ml", grosir: 178000, ecer: 15000, satuan: "dos", isi: "12 botol"},
-  {id: "Grm", nama: "Garam senyum 250gr", grosir: 27000, ecer: 1500, satuan: "slop", isi: "20 bks"},
-  {id: "Grmjmpl", nama: "Garam jempol 200gr", grosir: 22000, ecer: 1300, satuan: "slop", isi: "20 bks"},
-  {id: "Ichioch", nama: "Ichi ocha", grosir: 50000, ecer: 2500, satuan: "dos", isi: "24 botol"},
-  {id: "Pck", nama: "Teh pucuk", grosir: 58000, ecer: 2500, satuan: "dos", isi: "24 botol"},
-  {id: "Aqv700", nama: "Aquviva 700ml", grosir: 20000, ecer: 2000, satuan: "slop", isi: "12 botol"},
-  {id: "Thrio", nama: "Teh rio", grosir: 19000, ecer: 19000, satuan: "dos", isi: "24 cup"},
-  {id: "Mkmkl3", nama: "Moko moko L3", grosir: 104000, ecer: 4500, satuan: "dos", isi: "24 pack"},
-  {id: "Djsmsurfl", nama: "Dji sam soe refil 12", grosir: 214000, ecer: 21500, satuan: "slop", isi: "10 bks"},
-  {id: "Dsskrtk12", nama: "Dji sam soe 12 kretek", grosir: 186000, ecer: 19000, satuan: "slop", isi: "10 bks"},
-  {id: "Kp1kg", nama: "Kopi mentah 1kg", grosir: 64000, ecer: 64000, satuan: "Kg", isi: "1kg"},
-  {id: "Kp500", nama: "Kopi mentah 500gr", grosir: 32500, ecer: 32500, satuan: "500gr", isi: "500gr"},
-  {id: "Kp250gr", nama: "Kopi mentah 250gr", grosir: 16500, ecer: 16500, satuan: "250gr", isi: "250gr"},
-{id: "Tmbr", nama: "Tumbar", grosir: 24000, ecer: 2500, satuan: "kg", isi: "1 kg"},
-  {id: "Mrca", nama: "Merica", grosir: 165000, ecer: 17000, satuan: "Kg", isi: "1kg"},
-  {id: "Rptor", nama: "Raptor kretek", grosir: 80000, ecer: 8500, satuan: "slop", isi: "10 bks"},
-  {id: "Fntkcl", nama: "Fanta kecil", grosir: 32000, ecer: 3000, satuan: "slop", isi: "12 botol"},
-  {id: "Pcr350ml", nama: "Pocari sweat 350ml", grosir: 126000, ecer: 5500, satuan: "dos", isi: "24 botol"},
-  {id: "Adesrcku", nama: "Adem sari chingku", grosir: 140000, ecer: 6000, satuan: "dos", isi: "24 kaleng"},
-  {id: "Wpc780", nama: "Wpc 780ml", grosir: 68500, ecer: 11500, satuan: "dos", isi: "6 botol"},
-  {id: "Trdpdg", nama: "Terigu dua pedang", grosir: 169000, ecer: 7000, satuan: "Sak", isi: "25 kg"},
-  {id: "Pwrfu", nama: "Power f ungu", grosir: 20000, ecer: 20000, satuan: "dos", isi: "24 pcs"},
-  {id: "Pdms2k", nama: "Padimas 2000", grosir: 99000, ecer: 1750, satuan: "dos", isi: "62 pcs"},
-  {id: "Drms", nama: "Doro mas", grosir: 37000, ecer: 37000, satuan: "Bal", isi: "44 biji"},
-{id: "Ekclk", nama: "Ekonomi colek", grosir: 50000, ecer: 1700, satuan: "dos", isi: "30 pcs"},
-{id: "Ka150g", nama: "Kapal api 150gr", grosir: 421000, ecer: 21500, satuan: "dos", isi: "20 pcs"},
-  {id: "Extrjs", nama: "Extrajoss", grosir: 65500, ecer: 13500, satuan: "slop", isi: "5 pak"},
-  {id: "Tpsgtga", nama: "Tp segitiga kemasan", grosir: 128000, ecer: 11000, satuan: "dos", isi: "12 pcs"},
-  {id: "Ldaku", nama: "Ladaku", grosir: 59000, ecer: 10000, satuan: "Pak", isi: "6 rtg"},
-  {id: "Hmjrg", nama: "Hemaviton jreng", grosir: 80500, ecer: 8500, satuan: "Slop", isi: "10 kotak"},
-  {id: "Frtius", nama: "Fortius", grosir: 67000, ecer: 2500, satuan: "dos", isi: "30 pak"},
-  {id: "Lwkhm", nama: "Luwak hitam mini 6.5gr", grosir: 180000, ecer: 8500, satuan: "dos", isi: "20 rtg"},
-  {id: "Mi3aym", nama: "Mie 3 ayam", grosir: 37000, ecer: 1700, satuan: "dos", isi: "24 pcs"},
-  {id: "Kaspmx", nama: "Kapal api mix", grosir: 197000, ecer: 17000, satuan: "dos", isi: "12 rtg"},
-{id: "Mskaym", nama: "Masako ayam", grosir: 260000, ecer: 4500, satuan: "dos", isi: "60 rtg"},
-  {id: "Msksp", nama: "Masako sapi", grosir: 260000, ecer: 4500, satuan: "dos", isi: "60 rtg"},
-  {id: "eml400", nama: "Emeron lovely 400ml", grosir: 93000, ecer: 8000, satuan: "dos", isi: "12 pcs"},
-  {id: "pshdlrt", nama: "Posh deo lotion rtg", grosir: 196500, ecer: 16500, satuan: "dos", isi: "12 rtg"},
-  {id: "2kcpbx", nama: "Kecap sedap 2rtg+box", grosir: 79000, ecer: 10500, satuan: "dos", isi: "16 rtg"},
-  {id: "kcsprg", nama: "Kecap sedap + piring", grosir: 348000, ecer: 20500, satuan: "dos", isi: "12 pcs"},
-     {id: "nvbx", nama: "Nuvo box", grosir: 187000, ecer: 10500, satuan: "dos", isi: "18 pack"},
-  {id: "skll500", nama: "Soklin liquid 500", grosir: 46500, ecer: 5000, satuan: "dos", isi: "10 rtg"},
-  {id: "skllrtg", nama: "Soklin lantai rtg", grosir: 100000, ecer: 4500, satuan: "dos", isi: "24 rtg"},
-  {id: "skllp", nama: "Soklin lantai pouch 1000", grosir: 36500, ecer: 900, satuan: "dos", isi: "48 pouch"},
-  {id: "spsl", nama: "Super sol", grosir: 89500, ecer: 4000, satuan: "dos", isi: "24 pouch"},
-  {id: "tpsrbgn", nama: "Tp serbaguna 75gr", grosir: 291000, ecer: 24500, satuan: "dos", isi: "12 rtg"},
-  {id: "ekmgrg", nama: "Ekomie goreng", grosir: 53500, ecer: 1500, satuan: "dos", isi: "40 pcs"},
-  {id: "ekmrtg", nama: "Ekomie 3 pcs/rtg", grosir: 64000, ecer: 5500, satuan: "dos", isi: "12 rtg"},
-  {id: "mss5k", nama: "Micin sasa 5000", grosir: 341000, ecer: 4500, satuan: "dos", isi: "80 bks"},
-    {id: "P001", nama: "Minyak kita botol", grosir: 197000, ecer: 16500, satuan: "dos", isi: "12 botol"},
-    {id: "P002", nama: "Minyak kita refil", grosir: 197000, ecer: 16500, satuan: "dos", isi: "12 pcs"},
-    {id: "P003", nama: "Gula", grosir: 743000, ecer: 15500, satuan: "sak", isi: "50kg"},
-    {id: "P004", nama: "Rokok Surya 12", grosir: 252000, ecer: 25500, satuan: "slop", isi: "10 bungkus"},
-    {id: "skn12", nama: "Rokok sukun 12", grosir: 200000, ecer: 20000, satuan: "slop", isi: "10 bungkus"},
-    {id: "skn16", nama: "Rokok sukun 16", grosir: 257000, ecer: 26000, satuan: "slop", isi: "10 bungkus"},
-    {id: "skni", nama: "Rokok sukun hijau", grosir: 109000, ecer: 11000, satuan: "slop", isi: "10 bungkus"},
-  {id: "dj76", nama: "Rokok djarum 76", grosir: 153000, ecer: 15500, satuan: "slop", isi: "10 bungkus"},
-  {id: "djr12", nama: "Rokok djarum super", grosir: 231000, ecer: 23500, satuan: "slop", isi: "10 bungkus"},
-  {id: "alm", nama: "Rokok alami", grosir: 94500, ecer: 9500, satuan: "slop", isi: "10 bungkus"},
-  {id: "rkintr", nama: "Rokok inter", grosir: 496000, ecer: 25000, satuan: "slop", isi: "20 bungkus"},
-  {id: "clntx", nama: "Cleantex", grosir: 178000, ecer: 12000, satuan: "dos", isi: "16 botol"},
-  {id: "intmo", nama: "Intermie ori", grosir: 52500, ecer: 1400, satuan: "dos", isi: "40 bungkus"},
-  {id: "intmp", nama: "Intermie pedas", grosir: 53000, ecer: 1400, satuan: "dos", isi: "40 bungkus"},
-  {id: "mss", nama: "Mie sedap soto", grosir: 105000, ecer: 2700, satuan: "dos", isi: "40 bungkus"},
-  {id: "msab", nama: "Mie sedap AB", grosir: 105000, ecer: 2700, satuan: "dos", isi: "40 bungkus"},
-  {id: "msgr", nama: "Mie sedap GR", grosir: 110000, ecer: 2800, satuan: "dos", isi: "40 bungkus"},
-  {id: "inms", nama: "Indomie soto", grosir: 109000, ecer: 2800, satuan: "dos", isi: "40 bungkus"},
-  {id: "inmgr", nama: "Indomie goreng", grosir: 114000, ecer: 2900, satuan: "dos", isi: "40 bungkus"},
-  {id: "mskr", nama: "Mie sedap korean", grosir: 110000, ecer: 2800, satuan: "dos", isi: "40 bungkus"},
-  {id: "tptlp", nama: "Tp tulip", grosir: 166000, ecer: 7000, satuan: "sak", isi: "25kg"},
-  {id: "okas", nama: "Tp oka", grosir: 170000, ecer: 7500, satuan: "sak", isi: "25kg"},
-  {id: "tpckr", nama: "Tp cakra", grosir: 218000, ecer: 9000, satuan: "sak", isi: "25kg"},
-  {id: "tplm", nama: "Tp lencana merah", grosir: 173000, ecer: 7500, satuan: "sak", isi: "25kg"},
-  {id: "trmk", nama: "Tora moka", grosir: 189000, ecer: 16000, satuan: "dos", isi: "12 rtg"},
-  {id: "ks2kmrh", nama: "Kecap sedap 2000 merah", grosir: 74000, ecer: 1600, satuan: "dos", isi: "48 pcs"},
-  {id: "ks2kh", nama: "Kecap sedap 2000 hijau", grosir: 55000, ecer: 1200, satuan: "dos", isi: "48 pcs"},
-  {id: "ssrtgp", nama: "Susu rtg P", grosir: 149000, ecer: 7500, satuan: "dos", isi: "20 rtg"},
-  {id: "ssrtgc", nama: "Susu rtg C", grosir: 149000, ecer: 7500, satuan: "dos", isi: "20 rtg"},
-  {id: "ssrtgpb", nama: "Susu rtg P+bonus", grosir: 151000, ecer: 7500, satuan: "dos", isi: "20 rtg"},
-  {id: "ssrtgcb", nama: "Susu rtg C+bonus", grosir: 151000, ecer: 7500, satuan: "dos", isi: "20 rtg"},
-  {id: "ryl5", nama: "Royale", grosir: 95500, ecer: 4500, satuan: "dos", isi: "24 rtg"},
-  {id: "mm2k", nama: "Mama Lemon 2000", grosir: 31500, ecer: 1400, satuan: "dos", isi: "24 pcs"},
-  {id: "edwr", nama: "Ekonomi cair 2000", grosir: 37500, ecer: 3500, satuan: "dos", isi: "36 pcs"},
-  {id: "glda", nama: "Golda", grosir: 36000, ecer: 3500, satuan: "slop", isi: "12 botol"},
-  {id: "Sdkaym", nama: "Sedap kaldu ayam", grosir: 128500, ecer: 4500, satuan: "dos", isi: "30 rtg"},
-  {id: "sdpksp", nama: "Sedap kaldu sapi", grosir: 128500, ecer: 4500, satuan: "dos", isi: "30 rtg"},
-  {id: "kamni", nama: "Kapal api mini", grosir: 181000, ecer: 9500, satuan: "dos", isi: "20 rtg"},
-  {id: "frtn", nama: "Fortun", grosir: 218000, ecer: 18500, satuan: "dos", isi: "12 pcs"},
-  {id: "bpc", nama: "Boom", grosir: 96000, ecer: 3000, satuan: "dos", isi: "36 pcs"},
-  {id: "sklngm", nama: "Soklin gm", grosir: 96000, ecer: 4100, satuan: "dos", isi: "24 pcs"},
-  {id: "msdpkr", nama: "Mie sedap kare", grosir: 105000, ecer: 2700, satuan: "dos", isi: "40 pcs"},
-  {id: "okrs200", nama: "Oka rose 200gr", grosir: 34000, ecer: 2000, satuan: "bal", isi: "20 pcs"},
-  {id: "okrs500", nama: "Oka rose 500gr", grosir: 77000, ecer: 4000, satuan: "bal", isi: "20 pcs"},
-  {id: "tpbrs", nama: "Tp beras rosebrand", grosir: 130500, ecer: 7000, satuan: "dos", isi: "20 pcs"},
-  {id: "tpktn", nama: "Tp ketan rosebrand", grosir: 183000, ecer: 9500, satuan: "dos", isi: "20 pcs"},
-  {id: "gjhbrf12", nama: "Gajah baru filter 12", grosir: 166000, ecer: 17000, satuan: "slop", isi: "10 bungkus"},
-  {id: "glgbrf12", nama: "Galang baru fiter 12", grosir: 159000, ecer: 16500, satuan: "slop", isi: "10 bungkus"},
-  {id: "ec650", nama: "Ekonomi cair 650ml", grosir: 82000, ecer: 7000, satuan: "dos", isi: "12 pcs"},
-  {id: "flrdn", nama: "Floridina", grosir: 30500, ecer: 3000, satuan: "dos", isi: "12 botol"},
-  {id: "tsbkdm", nama: "Tisu basah kodomo", grosir: 223000, ecer: 10000, satuan: "dos", isi: "24 pcs"},
-  {id: "skp320", nama: "Soklin pewangi 5000 320ml", grosir: 89500, ecer: 4000, satuan: "dos", isi: "24 pcs"},
-  {id: "tgarn", nama: "Top gula aren", grosir: 198000, ecer: 17000, satuan: "dos", isi: "12 rtg"},
-  {id: "kmri", nama: "Kemiri 1kg", grosir: 38000, ecer: 38000, satuan: "kg", isi: "kg"},
-  {id: "sektpslp", nama: "Sek topi", grosir: 19500, ecer: 2000, satuan: "slop", isi: "10 ikat"},
-  {id: "tppyg", nama: "Tp payung", grosir: 170000, ecer: 7000, satuan: "sak", isi: "25kg"},
-  {id: "smprnagakr", nama: "Sampoerna aga", grosir: 156000, ecer: 16000, satuan: "slop", isi: "10 bungkus"},
-  {id: "smprnaghtm", nama: "Sampoerna aga hitam", grosir: 150000, ecer: 15500, satuan: "slop", isi: "10 bungkus"},
-  {id: "ryca", nama: "Royco ayam", grosir: 211000, ecer: 4500, satuan: "dos", isi: "48 rtg"},
-  {id: "rycs", nama: "Royco sapi", grosir: 212000, ecer: 4500, satuan: "dos", isi: "48 rtg"},
-  {id: "c1k", nama: "C1000", grosir: 159000, ecer: 5500, satuan: "dos", isi: "30 botol"},
-  {id: "brbrn", nama: "Bearbrand", grosir: 283000, ecer: 9500, satuan: "dos", isi: "30 botol"},
-  {id: "strla", nama: "Sterila", grosir: 15000, ecer: 15000, satuan: "dos", isi: "48 botol"},
-  {id: "alal", nama: "Ale ale", grosir: 20500, ecer: 20500, satuan: "dos", isi: "24 cup"},
-  {id: "onsk", nama: "Obat nyamuk sapi kecil", grosir: 241000, ecer: 4500, satuan: "dos", isi: "60 pak"},
-  {id: "onsj", nama: "Obat nyamuk sapi jumbo", grosir: 271000, ecer: 5000, satuan: "dos", isi: "60 pak"},
-  {id: "tmkcl", nama: "Top mini", grosir: 133000, ecer: 7000, satuan: "dos", isi: "20 rtg"},
-  {id: "glrb", nama: "Gula rose brand", grosir: 328000, ecer: 17000, satuan: "bal", isi: "20 pcs"},
-  {id: "tpsssrbgn", nama: "Tp sasa rtg", grosir: 120000, ecer: 8500, satuan: "dos", isi: "15 rtg"},
-  {id: "dsrtg", nama: "Protex daun sirih rtg", grosir: 102500, ecer: 4500, satuan: "dos", isi: "24 rtg"},
-  {id: "kmr100g", nama: "Kemiri 100gr", grosir: 4000, ecer: 4000, satuan: "gr", isi: "100gr"},
-  {id: "kmr250gr", nama: "Kemiri 250gr", grosir: 10000, ecer: 10000, satuan: "gr", isi: "250gr"},
-  {id: "kmri500g", nama: "Kemiri 500gr", grosir: 19500, ecer: 19500, satuan: "gr", isi: "500gr"},
-  {id: "mm1/2ons", nama: "Moto mobil rtg 1/2 ons", grosir: 129000, ecer: 13000, satuan: "bal", isi: "10 rtg"},
-  {id: "sntnpas", nama: "Santanpas", grosir: 111000, ecer: 9500, satuan: "dos", isi: "12 rtg"},
-  {id: "indmkc", nama: "Indomilk milky kid C", grosir: 90000, ecer: 2500, satuan: "dos", isi: "40 pcs"},
-  {id: "sklnpk", nama: "Soklin pk", grosir: 54000, ecer: 5000, satuan: "dos", isi: "12 rtg"},
-  {id: "wowsp", nama: "Wow spageti", grosir: 112000, ecer: 14500, satuan: "dos", isi: "8 rtg"},
-  {id: "bjgmrh", nama: "Bijag merah", grosir: 65000, ecer: 5500, satuan: "slop", isi: "12 pcs"},
-  {id: "bjgung", nama: "Bijak ungu", grosir: 74000, ecer: 5000, satuan: "bal", isi: "15 rtg"},
-  {id: "splfby", nama: "Sampo lifeboy", grosir: 170000, ecer: 4500, satuan: "dos", isi: "42 rtg"},
-  {id: "lrtnklgbdk", nama: "Larutan kaleng cap badak", grosir: 123000, ecer: 5500, satuan: "dos", isi: "24 klg"},
-  {id: "kcg1kg", nama: "Kacang 1kg", grosir: 28000, ecer: 28000, satuan: "kg", isi: "1kg"},
-  {id: "kcg500g", nama: "Kacang 500gr", grosir: 14500, ecer: 14500, satuan: "gr", isi: "500gr"},
-  {id: "kcg250g", nama: "Kacang 250gr", grosir: 7500, ecer: 7500, satuan: "gr", isi: "250gr"},
-  {id: "sschc", nama: "Saos chicken", grosir: 167000, ecer: 4500, satuan: "dos", isi: "40 rtg"},
-  {id: "fnt5k", nama: "Fanta 5000", grosir: 45500, ecer: 4000, satuan: "slop", isi: "12 botol"},
-  {id: "sprt5k", nama: "Sprit 5000", grosir: 45500, ecer: 4000, satuan: "slop", isi: "12 botol"},
-  {id: "cc5k", nama: "Coca cola 5.000", grosir: 45500, ecer: 4000, satuan: "slop", isi: "12 botol"},
-  {id: "alhy", nama: "Alahya", grosir: 15000, ecer: 15000, satuan: "dos", isi: "48 gelas"}
-  ];
-
-  let keranjang = [];
-  let editIndex = null; // index riwayat yang sedang diedit
-
-  function cariProduk() {
-    const input = document.getElementById("cariProduk").value.toLowerCase();
-    const suggestionBox = document.getElementById("suggestions");
-    suggestionBox.innerHTML = "";
-
-    if (!input) { suggestionBox.style.display = "none"; return; }
-
-    const hasil = produkDB.filter(p => p.id.toLowerCase().includes(input) || p.nama.toLowerCase().includes(input));
-
-    if (hasil.length > 0) {
-      hasil.forEach(p => {
-        const div = document.createElement("div");
-        div.className = "suggestion-item";
-        div.innerHTML = `
-          <div class="nama-produk">${p.nama}</div>
-          <div class="harga-info">${p.satuan}: Rp ${p.grosir.toLocaleString()} | Ecer: Rp ${p.ecer.toLocaleString()}</div>
-          <div class="isi-info">Isi: ${p.isi}</div>
-          <span class="btn-pilih btn-dos" onclick="tambahKeranjang('${p.id}','grosir')">${p.satuan}</span>
-          <span class="btn-pilih btn-ecer" onclick="tambahKeranjang('${p.id}','ecer')">Ecer</span>
-        `;
-        suggestionBox.appendChild(div);
-      });
-      suggestionBox.style.display = "block";
-    } else {
-      suggestionBox.style.display = "none";
+const produkDB = [
+{
+    "barcode": "",
+    "nama": "Top white",
+    "karton": 129000,
+    "variasi": [
+      {
+        "nama": "Ecer",
+        "barcode": "8998866609234",
+        "harga": 13000
+      }
+    ],
+    "isi": "10 rtg"
+  },
+  {
+    "barcode": "",
+    "nama": "Royko ayam",
+    "karton": 211000,
+    "variasi": [
+      {
+        "nama": "1 rtg",
+        "barcode": "8999999601331",
+        "harga": 4500
+      }
+    ],
+    "isi": "48 rtg"
+  },
+  {
+    "barcode": "",
+    "nama": "Royko sapi",
+    "karton": 212000,
+    "variasi": [
+      {
+        "nama": "1 rtg",
+        "barcode": "8999999601348",
+        "harga": 4500
+      }
+    ],
+    "isi": "48 rtg"
+  },
+{
+    "barcode": "",
+    "nama": "Top gula aren",
+    "karton": 198000,
+    "variasi": [
+      {
+        "nama": "Ecer",
+        "barcode": "8998866202626",
+        "harga": 17000
+      }
+    ],
+    "isi": "12 rtg"
+  },
+  {
+    "barcode": "",
+    "nama": "Rokok galang filter 12",
+    "slop": 157000,
+    "variasi": [
+      {
+        "nama": "Ecer",
+        "barcode": "8997220470176",
+        "harga": 16000
+      }
+    ],
+    "isi": "10 bks"
+  },
+  {
+    "barcode": "",
+    "nama": "Rokok international",
+    "slop": 496000,
+    "variasi": [
+      {
+        "nama": "Ecer",
+        "barcode": "8998989100120",
+        "harga": 25000
+      }
+    ],
+    "isi": "20 bks"
+  },
+{
+    "barcode": "",
+    "nama": "Rokok galang filter 16",
+    "slop": 202000,
+    "variasi": [
+      {
+        "nama": "Ecer",
+        "barcode": "8997220470206",
+        "harga": 20500
+      }
+    ],
+    "isi": "10 bks"
+  },
+{
+    "barcode": "",
+    "nama": "Teh sariwangi rtg",
+    "karton": 225000,
+    "variasi": [
+      {
+        "nama": "1 rtg",
+        "barcode": "8999999540333",
+        "harga": 4500
+      }
+    ],
+    "isi": "48 rtg"
+  },
+{
+    "barcode": "",
+    "nama": "Teh sariwangi kotak",
+    "karton": "263000",
+    "variasi": [
+      {
+        "nama": "Ecer",
+        "barcode": "8999999195649",
+        "harga": 5500
+      }
+    ],
+    "isi": "48 kotak"
+  },
+{
+    "barcode": "",
+    "nama": "Soklin ekonomis",
+    "karton": 94500,
+    "variasi": [
+      {
+        "nama": "Peo ros",
+        "barcode": "8998866808231",
+        "harga": 8000
+      }
+    ],
+    "isi": "12 pcs"
+  },
+  {
+    "barcode": "",
+    "nama": "Soklin gm",
+    "karton": 98000,
+    "variasi": [
+      {
+        "nama": "Korean c",
+        "barcode": "8998866618687",
+        "harga": 4100
+      },
+      {
+        "nama": "Velvet orc",
+        "barcode": "8998866609494",
+        "harga": 4100
+      },
+      {
+        "nama": "Peony ros",
+        "barcode": "8998866609487",
+        "harga": 4100
+      }
+    ],
+    "isi": "24 pcs"
+  },
+{
+    "barcode": "",
+    "nama": "Floridina",
+    "karton": 30500,
+    "variasi": [
+      {
+        "nama": "Jeruk",
+        "barcode": "",
+        "harga": 2700
+      },
+      {
+        "nama": "Kelapa",
+        "barcode": "",
+        "harga": 2700
+      }
+    ],
+    "isi": "12 botol"
+  },
+{
+    "barcode": "",
+    "nama": "Minyak fortune bantal",
+    "karton": 218000,
+    "variasi": [
+      {
+        "nama": "Ecer",
+        "barcode": "8998225800012",
+        "harga": 18500
+      }
+    ],
+    "isi": "12 pcs"
+  },
+{
+    "barcode": "",
+    "nama": "Sek topi",
+    "bal": 96000,
+    "variasi": [
+      {
+        "nama": "1 pak(isi 10 tali)",
+        "barcode": "",
+        "harga": 19000
+      },
+      {
+        "nama": "Ecer",
+        "barcode": "",
+        "harga": 2000
+      }
+    ],
+    "isi": ""
+  },
+{
+    "barcode": "",
+    "nama": "Cengkeh gunting",
+    "pak": 102000,
+    "variasi": [
+      {
+        "nama": "ecer lama/tanpa gerigi",
+        "barcode": "",
+        "harga": 6000
+      },
+      {
+        "nama": "ecer Baru/gerigi",
+        "barcode": "",
+        "harga": 5500
+      },
+      {
+        "nama": "ecer Beli > 5 baru/gerigi",
+        "barcode": "",
+        "harga": 5100
+      }
+    ],
+    "isi": "20 pcs"
+  },
+{
+    "barcode": "",
+    "nama": "Kecap bango 3000",
+    "karton": 112000,
+    "variasi": [
+      {
+        "nama": "Ecer",
+        "barcode": "8999999514006",
+        "harga": 2500
+      }
+    ],
+    "isi": "48 pcs"
+  },
+{
+    "barcode": "",
+    "nama": "Ekonomi cair 650ml",
+    "karton": 81500,
+    "variasi": [
+    {
+        "nama": "Ecer",
+        "barcode": "8998866611718",
+        "harga": 7000
     }
+    ],
+    "isi": "12 pcs"
+  },
+{
+    "nama": "Oka sak",
+    "barcode": "",
+    "satuan": "Sak",
+    "sak": "160000",
+    "isi": "25kg",
+    "variasi": [
+      {
+        "nama": "1kg",
+        "barcode": "",
+        "harga": "7000"
+      }
+    ]
+  },
+  {
+    "nama": "Protex ungu 5p",
+    "barcode": "",
+    "satuan": "Karton",
+    "karton": "109000",
+    "isi": "48 pak/4 tas",
+    "variasi": [
+      {
+        "nama": "1 tas",
+        "barcode": "",
+        "harga": "28000"
+      },
+      {
+        "nama": "1 pcs",
+        "barcode": "8998866500128",
+        "harga": "2500"
+      }
+    ]
+  },
+  {
+    "nama": "Rokok gajah filter 12",
+    "barcode": "",
+    "satuan": "Slop",
+    "slop": "166000",
+    "isi": "10 bks",
+    "variasi": [
+      {
+        "nama": "Ecer",
+        "barcode": "8997018320829",
+        "harga": "17000"
+      }
+    ]
+  },
+{
+    "nama": "Tp lombok",
+    "barcode": "",
+    "satuan": "Pak",
+    "pak": "9000",
+    "isi": "10 pcs",
+    "variasi": [
+      {
+        "nama": "Ecer",
+        "barcode": "8997030090274",
+        "harga": "1000"
+      }
+    ]
+  },
+  {
+    "nama": "Intermie pedas",
+    "barcode": "",
+    "satuan": "Karton",
+    "karton": "53000",
+    "isi": "40 bks",
+    "variasi": [
+      {
+        "nama": "Ecer",
+        "barcode": "089686021004",
+        "harga": "1500"
+      }
+    ]
+  },
+  {
+    barcode: "",
+    nama: "sabun giv",
+    karton: 182000,
+    variasi: [
+      { nama: "pepaya", barcode: "8998866608312", harga: 2600 },
+      { nama: "hijab tin", barcode: "8998866612890", harga: 2600 },
+      { nama: "safron", barcode: "8998866621519", harga: 2600 }
+    ],
+    isi: "72 pcs"
+  },
+  {
+    "nama": "Rapika 400ml",
+    "barcode": "",
+    "satuan": "Karton",
+    "karton": "42500",
+    "isi": "12 pouch",
+    "variasi": [
+      {
+        "nama": "Forever blosom",
+        "barcode": "8998866603416",
+        "harga": "4000"
+      },
+      {
+        "nama": "Sparkling water",
+        "barcode": "8998866605649",
+        "harga": "4000"
+      }
+    ]
+  },
+{
+    barcode: "",
+    nama: "gula merah",
+    bal: 120000,
+    variasi: [
+      { nama: "1kg", barcode: "", harga: 15000 },
+      { nama: "500gr", barcode: "", harga: 8000 },
+      { nama: "250gr", barcode: "", harga: 4500 }
+    ],
+    isi: "8.5kg"
+  },
+{
+    barcode: "",
+    nama: "aqua 600ml",
+    karton: 45500,
+    variasi: [
+      { nama: "ecer", barcode: "", harga: 2000 }
+    ],
+    isi: "24 btl"
+  },
+{
+    barcode: "",
+    nama: "aqua 1,5L",
+    karton: 52000,
+    variasi: [
+      { nama: "ecer", barcode: "", harga: 4500 }
+    ],
+    isi: "12 btl"
+  },
+{
+    barcode: "",
+    nama: "kecap bango rtg",
+    karton: 112000,
+    variasi: [
+      { nama: "rtg", barcode: "8999999533496", harga: 9500 }
+    ],
+    isi: "12 rtg"
+  },
+{
+    barcode: "",
+    nama: "sampo emeron rtg",
+    karton: 83000,
+    variasi: [
+      { nama: "black shine", barcode: "8998866107020", harga: 4000 }
+    ],
+    isi: "21 rtg"
+  },
+{
+    barcode: "",
+    nama: "closeup 75gr",
+    karton: 334000,
+    variasi: [
+      { nama: "ecer", barcode: "8999999574376", harga: 7000 }
+    ],
+    isi: "48 pcs"
+  },
+{
+    barcode: "",
+    nama: "aqua gelas",
+    karton: 33000,
+    variasi: [
+      
+    ],
+    isi: "48 gls"
+  },
+  {
+    barcode: "",
+    nama: "sabun nuvo",
+    karton: 178500,
+    variasi: [
+      { nama: "pink", barcode: "8998866610742", harga: 2700 },
+      { nama: "kuning", barcode: "8998866602570", harga: 2700 }
+    ],
+    isi: "72 pcs"
+  },
+  {
+    barcode: "8999909000995",
+    nama: "sampoerna aga",
+    slop: 156000,
+    variasi: [
+      { nama: "ecer", barcode: "8999909000988", harga: 16000 }
+    ],
+    isi: "10 bungkus"
+  },
+   {
+    barcode: "",
+    nama: "tp tulip",
+    sak: 166000,
+    variasi: [
+      { nama: "1kg", barcode: "", harga: 7000 }
+    ],
+    isi: "25kg"
+  },
+    {
+    barcode: "",
+    nama: "gula",
+    sak: 743000,
+    variasi: [
+      { nama: "1kg", barcode: "", harga: 15500 }
+    ],
+    isi: "50kg"
+  },
+    {
+    barcode: "",
+    nama: "kecap sedap rtg merah",
+    karton: 79000,
+    variasi: [
+      { nama: "2 rt+box", barcode: "", harga: 10500 },
+      { nama: "1 rtg", barcode: "8998866609647", harga: 5250 }
+    ],
+    isi: "16 rtg"
+  },
+      {
+    barcode: "",
+    nama: "rokok alami",
+    slop: 94500,
+    variasi: [
+      { nama: "ecer", barcode: "8990111211001", harga: 9500 }
+    ],
+    isi: "10 bungkus"
+  },
+  {
+    barcode: "8999090502032",
+    nama: "rokok sukun ex 12",
+    slop: 200000,
+    variasi: [
+      { nama: "ecer", barcode: "8999090501035", harga: 20000 }
+    ],
+    isi: "10 bungkus"
+  },
+  {
+    barcode: "",
+    nama: "Minyak kita botol",
+    karton: 197000,
+    variasi: [
+      { nama: "ecer", barcode: "8997013450415", harga: 16500 }
+    ],
+    isi: "12 btl"
+  },
+  {
+    barcode: "",
+    nama: "sedap cup ayam jerit",
+    karton: 47000,
+    variasi: [
+      { nama: "ecer", barcode: "8998866202930", harga: 4000 }
+    ],
+    isi: "12 cup"
+  },
+  {
+    barcode: "",
+    nama: "sedap cup soto",
+    karton: 47000,
+    variasi: [
+      { nama: "ecer", barcode: "8998866200837", harga: 4000 }
+    ],
+    isi: "12 cup"
+  },
+  {
+    barcode: "",
+    nama: "sedap cup baso bleduk",
+    karton: 47000,
+    variasi: [
+      { nama: "ecer", barcode: "8998866203258", harga: 4000 }
+    ],
+    isi: "12 cup"
+  },
+  {
+    barcode: "",
+    nama: "sedap cup baso spesial",
+    karton: 47000,
+    variasi: [
+      { nama: "ecer", barcode: "8998866200851", harga: 4000 }
+    ],
+    isi: "12 cup"
+  },
+  {
+    barcode: "",
+    nama: "sedap cup kari spesial",
+    karton: 47000,
+    variasi: [
+      { nama: "ecer", barcode: "8998866200844", harga: 4000 }
+    ],
+    isi: "12 cup"
+  },
+  {
+    barcode: "",
+    nama: "sedap cup ayam nampol",
+    karton: 47000,
+    variasi: [
+      { nama: "ecer", barcode: "8998866203807", harga: 4000 }
+    ],
+    isi: "12 cup"
+  },
+  {
+    barcode: "",
+    nama: "sedap cup singapore spicy laksa",
+    karton: 47000,
+    variasi: [
+      { nama: "ecer", barcode: "8998866204460", harga: 4000 }
+    ],
+    isi: "12 cup"
+  },
+  {
+    barcode: "",
+    nama: "sedap cup kari mercon",
+    karton: 45000,
+    variasi: [
+      { nama: "ecer", barcode: "8998866204156", harga: 4000 }
+    ],
+    isi: "12 cup"
+  },
+  {
+    barcode: "",
+    nama: "sedap cup korean spicy chicken",
+    karton: 50500,
+    variasi: [
+      { nama: "ecer", barcode: "8998866202404", harga: 4300 }
+    ],
+    isi: "12 cup"
+  },
+  {
+    barcode: "",
+    nama: "sedap cup korean spicy soup",
+    karton: 49000,
+    variasi: [
+      { nama: "ecer", barcode: "8998866202671", harga: 4200 }
+    ],
+    isi: "12 cup"
+  },
+  {
+    barcode: "",
+    nama: "sedap cup goreng",
+    karton: 50500,
+    variasi: [
+      { nama: "ecer", barcode: "8998866200813", harga: 4300 }
+    ],
+    isi: "12 cup"
+  },
+  {
+    barcode: "",
+    nama: "kapal api mini",
+    karton: 181000,
+    variasi: [
+      { nama: "1 rtg", barcode: "8991002105584", harga: 9500 },
+      { nama: "10 rtg", barcode: "", harga: 92000 }
+    ],
+    isi: "20 rtg"
+  },
+  {
+    barcode: "",
+    nama: "sabun fres box",
+    karton: 182000,
+    variasi: [
+      { nama: "pink", barcode: "8998866604512", harga: 10500 },
+      { nama: "biru", barcode: "8998866800204", harga: 10500 }
+    ],
+    isi: "18 pak"
+  },
+  {
+    barcode: "",
+    nama: "mama lemon 2000",
+    karton: 32000,
+    variasi: [
+      { nama: "ecer", barcode: "8998866105132", harga: 1500 }
+    ],
+    isi: "24 pcs"
+  },
+  {
+    barcode: "",
+    nama: "ekonomi colek",
+    karton: 50000,
+    variasi: [
+      { nama: "ecer", barcode: "8998866600095", harga: 1700 }
+    ],
+    isi: "30 pcs"
+  },
+  {
+    barcode: "",
+    nama: "ekonomi cair 2000",
+    karton: 37000,
+    variasi: [
+      { nama: "3 pcs nanas", barcode: "8998866627399", harga: 3500 },
+      { nama: "3 pcs nipis", barcode: "8998866611701", harga: 3500 }
+    ],
+    isi: "36 pcs"
+  },
+  {
+    barcode: "",
+    nama: "kecap sedap 2000 hijau",
+    karton: 55000,
+    variasi: [
+      { nama: "ecer", barcode: "8998866202275", harga: 1300 }
+    ],
+    isi: "48 pcs"
+  },
+  {
+    barcode: "",
+    nama: "mie sedap soto",
+    karton: 105000,
+    variasi: [
+      { nama: "ecer", barcode: "8998866200325", harga: 2700 }
+    ],
+    isi: "40 pcs"
+  },
+  {
+    barcode: "",
+    nama: "mie sedap ayam bawang",
+    karton: 105000,
+    variasi: [
+      { nama: "ecer", barcode: "8998866200318", harga: 2700 }
+    ],
+    isi: "40 pcs"
+  },
+  {
+    barcode: "",
+    nama: "mie sedap goreng",
+    karton: 110000,
+    variasi: [
+      { nama: "ecer", barcode: "8998866200301", harga: 2800 }
+    ],
+    isi: "40 pcs"
+  },
+  {
+    barcode: "",
+    nama: "mie sedap korean spicy chicken",
+    karton: 109000,
+    variasi: [
+      { nama: "ecer", barcode: "8998866202343", harga: 2800 }
+    ],
+    isi: "40 pcs"
+  },
+  {
+    barcode: "8999909012554",
+    nama: "sampoerna aga hitam/prima",
+    slop: 150000,
+    variasi: [
+      { nama: "ecer", barcode: "8999909012547", harga: 15500 }
+    ],
+    isi: "10 bks"
+  },
+  {
+    barcode: "",
+    nama: "rokok bit 16",
+    slop: 90000,
+    variasi: [
+      { nama: "ecer", barcode: "8991915102502", harga: 9500 }
+    ],
+    isi: "10 bks"
+  },
+  {
+    barcode: "8999090522641",
+    nama: "sukun hijau",
+    slop: 109000,
+    variasi: [
+      { nama: "ecer", barcode: "8999090102157", harga: 11000 }
+    ],
+    isi: "10 bks"
+  },
+  {
+    barcode: "",
+    nama: "masako sapi",
+    karton: 260500,
+    variasi: [
+      { nama: "rtg", barcode: "8992770033147", harga: 4500 }
+    ],
+    isi: "60 rtg"
+  },
+  {
+    barcode: "",
+    nama: "masako ayam",
+    karton: 260000,
+    variasi: [
+      { nama: "rtg", barcode: "8992770033130", harga: 4500 }
+    ],
+    isi: "60 rtg"
+  },
+  {
+    barcode: "",
+    nama: "sasa 5000",
+    karton: 341000,
+    variasi: [
+      { nama: "ecer", barcode: "8991188943369", harga: 4500 }
+    ],
+    isi: "80 bks"
+  },
+  {
+    barcode: "",
+    nama: "minyak kita refil",
+    karton: 197000,
+    variasi: [
+      { nama: "ecer", barcode: "8997222860722", harga: 16500 }
+    ],
+    isi: "12 pcs"
+  },
+  
+  {
+    "nama": "Merica",
+    "barcode": "",
+    "satuan": "1 kg",
+    "bal": "165000",
+    "isi": "1 kg",
+    "variasi": [
+      {
+        "nama": "500gr",
+        "barcode": "",
+        "harga": "83000"
+      },
+      {
+        "nama": "100gr",
+        "barcode": "",
+        "harga": "17000"
+      }
+    ]
+  },
+  {
+    "nama": "Teh pucuk",
+    "barcode": "",
+    "satuan": "Karton",
+    "karton": "58500",
+    "isi": "24 btl",
+    "variasi": [
+      {
+        "nama": "Ecer",
+        "barcode": "",
+        "harga": "2500"
+      }
+    ]
+  },
+  {
+    "nama": "Ichi ocha",
+    "barcode": "",
+    "karton": "50000",
+    "isi": "24 btl",
+    "variasi": [
+      {
+        "nama": "Ecer",
+        "barcode": "",
+        "harga": "2500"
+      }
+    ]
+  },
+  {
+    "nama": "Teh rio",
+    "barcode": "",
+    "satuan": "Karton",
+    "karton": "19000",
+    "isi": "24 cup",
+    "variasi": []
+  },
+  {
+    "nama": "Alahya gelas",
+    "barcode": "",
+    "satuan": "Karton",
+    "karton": "14500",
+    "isi": "48 gelas",
+    "variasi": [
+      {
+        "nama": "Beli < 5",
+        "barcode": "",
+        "harga": "14000"
+      }
+    ]
+  },
+  {
+    "nama": "Mie sedap ayam jerit",
+    "barcode": "",
+    "satuan": "Karton",
+    "karton": "108000",
+    "isi": "40 bks",
+    "variasi": [
+      {
+        "nama": "Ecer",
+        "barcode": "8998866626842",
+        "harga": "2800"
+      }
+    ]
+  },
+  {
+    "nama": "Mie sedap soto madura",
+    "barcode": "",
+    "satuan": "Karton",
+    "karton": "108000",
+    "isi": "40 bks",
+    "variasi": [
+      {
+        "nama": "Ecer",
+        "barcode": "8998866203401",
+        "harga": "2800"
+      }
+    ]
+  },
+  {
+    "nama": "Mie sedap goreng salero padang",
+    "barcode": "",
+    "satuan": "Karton",
+    "karton": "113500",
+    "isi": "40 bks",
+    "variasi": [
+      {
+        "nama": "Ecer",
+        "barcode": "8998866202770",
+        "harga": "2900"
+      }
+    ]
+  },
+  {
+    "nama": "Mie sedap ayam spesial",
+    "barcode": "",
+    "satuan": "Karton",
+    "karton": "99500",
+    "isi": "40 bks",
+    "variasi": [
+      {
+        "nama": "Ecer",
+        "barcode": "8998866200509",
+        "harga": "2600"
+      }
+    ]
   }
+];
 
-  function tambahKeranjang(id, mode) {
-    const produk = produkDB.find(p => p.id === id);
-    if (!produk) return;
+let keranjang = [];
+let riwayat = JSON.parse(localStorage.getItem("riwayatTransaksi") || "[]");
 
-    const harga = mode === "grosir" ? produk.grosir : produk.ecer;
-    const label = mode === "grosir" ? produk.satuan : "Ecer";
+function toggleRiwayat() {
+  const box = document.getElementById("riwayatBox");
+  const btn = document.getElementById("btnRiwayat");
 
-    const index = keranjang.findIndex(item => item.id === id && item.label === label);
-    if (index > -1) {
-      keranjang[index].qty += 1;
-    } else {
-      keranjang.push({...produk, qty: 1, harga, label});
-    }
-
-    renderKeranjang();
-    document.getElementById("cariProduk").value = "";
-    document.getElementById("suggestions").style.display = "none";
+  if (box.style.display === "none") {
+    box.style.display = "block";
+    btn.textContent = "Tutup Riwayat";
+  } else {
+    box.style.display = "none";
+    btn.textContent = "Riwayat Transaksi";
   }
+}
 
-  function updateQty(index, delta) {
-    keranjang[index].qty += delta;
-    if (keranjang[index].qty <= 0) keranjang.splice(index, 1);
-    renderKeranjang();
+const bulkKeys = [
+  {key:"karton", label:"Karton", badge:"badge-karton"},
+  {key:"slop",   label:"Slop",   badge:"badge-slop"},
+  {key:"pak",    label:"Pak",    badge:"badge-pak"},
+  {key:"sak",    label:"Sak",    badge:"badge-sak"},
+  {key:"bal",    label:"Bal",    badge:"badge-bal"}
+];
+
+// === Suara ===
+const suaraScan = document.getElementById("suaraScan");
+const suaraGagal = document.getElementById("suaraGagal");
+function playSuara(el) {
+  try {
+    el.currentTime = 0;
+    el.play();
+  } catch (e) {
+    // beberapa browser/permission mungkin blok, tetap lanjut
+    console.warn("Suara tidak bisa diputar:", e);
   }
+}
 
-  function hapusProduk(index) {
-    keranjang.splice(index, 1);
-    renderKeranjang();
-  }
+function formatRupiah(n) {
+  if (!n && n !== 0) return "0";
+  return Number(n).toLocaleString('id-ID');
+}
 
-  function renderKeranjang() {
-    const tbody = document.querySelector("#keranjang tbody");
-    tbody.innerHTML = "";
-    let total = 0;
-    keranjang.forEach((p, i) => {
-      const subtotal = p.harga * p.qty;
-      total += subtotal;
-
-      tbody.innerHTML += `
-        <tr>
-          <td>
-            <div>${p.nama}</div>
-            <div style="font-size:12px;color:#6b7280;">
-              ${p.label} @ Rp ${p.harga.toLocaleString()}
-            </div>
-          </td>
-          <td>
-            <div class="qty-control">
-              <button class="btn-qty" onclick="updateQty(${i},-1)">-</button>
-              ${p.qty}
-              <button class="btn-qty" onclick="updateQty(${i},1)">+</button>
-            </div>
-          </td>
-          <td>Rp ${subtotal.toLocaleString()}</td>
-          <td><button onclick="hapusProduk(${i})">X</button></td>
-        </tr>`;
-    });
-    document.getElementById("total").innerText = total.toLocaleString();
+function formatUangPembeli(el) {
+  let angka = el.value.replace(/\D/g, "");
+  if (angka === "") {
+    el.value = "";
     hitungKembalian();
+    return;
   }
+  el.value = Number(angka).toLocaleString("id-ID");
+  hitungKembalian();
+}
 
-  function hitungKembalian() {
-    const total = parseInt(document.getElementById("total").innerText.replace(/\./g,'')) || 0;
-    const bayar = parseInt(document.getElementById("uangPembeli").value) || 0;
-    const kembali = bayar - total;
-    document.getElementById("kembalian").innerText = kembali >= 0 ? kembali.toLocaleString() : "0";
-  }
+function renderUangRekomendasi() {
+  const total = keranjang.reduce((sum, i) => sum + i.harga * i.qty, 0);
+  const rekomendasi = [];
+  const nominalDasar = [50000, 100000, 200000, 500000];
+  nominalDasar.forEach(n => { if (n >= total) rekomendasi.push(n); });
 
-  function bukaRiwayat() {
-    document.getElementById("riwayatModal").style.display = "flex";
-    renderRiwayat();
-  }
-
-  function tutupRiwayat() {
-    document.getElementById("riwayatModal").style.display = "none";
-  }
-
-  function renderRiwayat() {
-    const tbody = document.querySelector("#tabelRiwayat tbody");
-    tbody.innerHTML = "";
-    let riwayat = JSON.parse(localStorage.getItem("riwayatOrder")) || [];
-
-    riwayat.forEach((r, i) => {
-      let detail = r.items.map(p => `${p.qty}x ${p.nama} (${p.label})`).join("<br>");
-      tbody.innerHTML += `
-        <tr>
-          <td>${r.tanggal}</td>
-          <td>Rp ${r.total.toLocaleString()}</td>
-          <td>${detail}</td>
-          <td>
-            <button class="aksi-btn edit-btn" onclick="editRiwayat(${i})">Edit</button>
-            <button class="aksi-btn hapus-btn" onclick="hapusRiwayat(${i})">Hapus</button>
-          </td>
-        </tr>`;
-    });
-  }
-
-  function editRiwayat(index) {
-    let riwayat = JSON.parse(localStorage.getItem("riwayatOrder")) || [];
-    if (!riwayat[index]) return;
-
-    keranjang = [...riwayat[index].items];
-    renderKeranjang();
-
-    editIndex = index;
-    tutupRiwayat();
-
-    alert("Orderan dimuat ke keranjang, silakan edit lalu cetak ulang.");
-  }
-
-  function hapusRiwayat(index) {
-    let riwayat = JSON.parse(localStorage.getItem("riwayatOrder")) || [];
-    riwayat.splice(index, 1);
-    localStorage.setItem("riwayatOrder", JSON.stringify(riwayat));
-    renderRiwayat();
-  }
-
-  function simpanRiwayat(order) {
-    let riwayat = JSON.parse(localStorage.getItem("riwayatOrder")) || [];
-    if (editIndex !== null) {
-      riwayat[editIndex] = order;
-      editIndex = null;
-    } else {
-      riwayat.push(order);
-    }
-    localStorage.setItem("riwayatOrder", JSON.stringify(riwayat));
-  }
-
-  async function cetakNota() {
-    const encoder = new TextEncoder();
-    let esc = "\x1B";
-    let nota = esc+"@";
-    nota += esc+"a"+String.fromCharCode(1);
-    nota += "WPA SHOP\n";
-    nota += "WA : 0852 3480 3820\n";
-    nota += esc+"a"+String.fromCharCode(0);
-    nota += "-----------------------------\n";
-
-    keranjang.forEach(p => {
-      nota += `${p.nama.substring(0,30)}\n`;
-      nota += `${p.qty} x ${p.harga.toLocaleString()} (${p.label})`;
-      nota += `= Rp ${(p.harga * p.qty).toLocaleString()}\n`;
-    });
-
-    nota += "-----------------------------\n";
-    nota += "TOTAL : Rp "+document.getElementById("total").innerText+"\n";
-    nota += "BAYAR : Rp "+(document.getElementById("uangPembeli").value || 0)+"\n";
-    nota += "KEMBALI: Rp "+document.getElementById("kembalian").innerText+"\n";
-    nota += "-----------------------------\n";
-    nota += esc+"a"+String.fromCharCode(1);
-    nota += "Terima Kasih\n\n\n\n";
-
-    // Simpan ke riwayat
-    const order = {
-      tanggal: new Date().toLocaleString(),
-      items: [...keranjang],
-      total: parseInt(document.getElementById("total").innerText.replace(/\./g,'')) || 0,
-      bayar: parseInt(document.getElementById("uangPembeli").value) || 0,
-      kembali: parseInt(document.getElementById("kembalian").innerText.replace(/\./g,'')) || 0
+  const div = document.getElementById("uangRekomendasi");
+  div.innerHTML = "";
+  rekomendasi.forEach(n => {
+    const btn = document.createElement("button");
+    btn.textContent = "Rp " + formatRupiah(n);
+    btn.onclick = () => {
+      document.getElementById("uangPembeli").value = formatRupiah(n);
+      hitungKembalian();
     };
-    simpanRiwayat(order);
+    div.appendChild(btn);
+  });
+}
 
-    try {
-      const device = await navigator.usb.requestDevice({ filters: [{}] });
-      await device.open();
-      if (device.configuration === null) await device.selectConfiguration(1);
-      const iface = device.configuration.interfaces[0];
-      await device.claimInterface(iface.interfaceNumber);
-      let endpointOut = null;
-      iface.alternates[0].endpoints.forEach(ep => { if (ep.direction === "out") endpointOut = ep.endpointNumber; });
-      if (endpointOut === null) throw new Error("Endpoint OUT tidak ditemukan");
-      const data = encoder.encode(nota);
-      await device.transferOut(endpointOut, data);
-      alert("Nota berhasil dicetak via USB!");
-    } catch (err) {
-      alert("Gagal mencetak: " + err);
+// === Notifikasi fade in / fade out ===
+const notifContainer = document.getElementById("notifContainer");
+/**
+ * showNotif(message, type="info", duration=2500)
+ * type: "success" | "error" | "info"
+ */
+function showNotif(message, type="info", duration=2500) {
+  const div = document.createElement("div");
+  div.className = "notif " + type;
+  const icon = document.createElement("div");
+  icon.className = "icon";
+  icon.textContent = type === "success" ? "✓" : (type === "error" ? "✕" : "i");
+  const txt = document.createElement("div");
+  txt.innerHTML = message;
+  div.appendChild(icon);
+  div.appendChild(txt);
+
+  notifContainer.appendChild(div);
+
+  // otomatis menghapus setelah duration (tambah animasi fade-out)
+  setTimeout(() => {
+    div.classList.add("fade-out");
+    // setelah anim selesai, remove
+    div.addEventListener("animationend", () => {
+      if (div.parentNode) div.parentNode.removeChild(div);
+    });
+  }, duration);
+}
+
+// === HASIL PENCARIAN ===
+function renderHasilCari(filter="") {
+  const tbody = document.querySelector("#tabelHasil tbody");
+  tbody.innerHTML = "";
+  if (filter.trim() === "") return; 
+
+  produkDB.forEach(p => {
+    if(p.nama.toLowerCase().includes(filter.toLowerCase())) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td><b>${p.nama}</b></td><td></td><td></td>`;
+      tbody.appendChild(tr);
+
+      p.variasi.forEach(v => {
+        if(v.nama.toLowerCase().includes(filter.toLowerCase()) || p.nama.toLowerCase().includes(filter.toLowerCase())) {
+          const trVarian = document.createElement("tr");
+          trVarian.className = "produk-varian";
+          trVarian.innerHTML = `
+            <td style="padding-left:25px;">${v.nama} <span class="badge badge-ecer">Ecer</span></td>
+            <td>Rp ${formatRupiah(v.harga)}</td>
+            <td><button onclick="tambahKeranjang('${p.nama}','${v.nama}','ecer',${v.harga})">Tambah</button></td>`;
+          tbody.appendChild(trVarian);
+        }
+      });
+
+      bulkKeys.forEach(bk => {
+        if (typeof p[bk.key] !== "undefined") {
+          const hargaBulk = p[bk.key];
+          const labelIsi = p.isi ? ` (isi ${p.isi})` : '';
+          const trVarian = document.createElement("tr");
+          trVarian.className = "produk-varian";
+          trVarian.innerHTML = `
+            <td style="padding-left:25px;">${bk.label}${labelIsi} <span class="badge ${bk.badge}">${bk.label}</span></td>
+            <td>Rp ${formatRupiah(hargaBulk)}</td>
+            <td><button onclick="tambahKeranjang('${p.nama}','${bk.label}${labelIsi}','${bk.key}',${hargaBulk})">Tambah</button></td>`;
+          tbody.appendChild(trVarian);
+        }
+      });
     }
+  });
+}
+
+// === KERANJANG ===
+function renderKeranjang() {
+  const tbody = document.querySelector("#tabelKeranjang tbody");
+  tbody.innerHTML = "";
+  let total = 0;
+  keranjang.forEach((item, index) => {
+    const itemTotal = Number(item.harga) * Number(item.qty || 0);
+    total += itemTotal;
+    let badgeClass = "badge-ecer", badgeText = "Ecer";
+    const found = bulkKeys.find(b => b.key === item.jenis);
+    if(found){ badgeClass = found.badge; badgeText = found.label; }
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${item.nama}</td>
+      <td>${item.varian} <span class="badge ${badgeClass}">${badgeText}</span></td>
+      <td>Rp ${formatRupiah(item.harga)}</td>
+      <td><input type="number" min="1" value="${item.qty}" onchange="ubahQty(${index}, this.value)"></td>
+      <td>Rp ${formatRupiah(itemTotal)}</td>
+      <td><button onclick="hapusItem(${index})">Hapus</button></td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById("totalBelanja").textContent = formatRupiah(total);
+  renderUangRekomendasi();
+  hitungKembalian();
+}
+
+function tambahKeranjang(nama, varian, jenis, harga) {
+  harga = Number(harga);
+  varian = varian.replace(/\(isi.*?\)/gi, "").trim();
+  const index = keranjang.findIndex(i => i.nama === nama && i.varian === varian && i.jenis === jenis);
+
+  if (index > -1) {
+    // Ambil item lama, tambah qty, lalu pindah ke atas
+    let item = keranjang.splice(index, 1)[0];
+    item.qty++;
+    keranjang.unshift(item);
+  } else {
+    // Item baru langsung ke atas
+    keranjang.unshift({ nama, varian, jenis, harga, qty: 1 });
   }
+
+  renderKeranjang();
+  showNotif(`${nama} ${varian ? "- " + varian : ""} ditambahkan`, "success", 2000);
+}
+
+
+function hapusItem(i) { 
+  const removed = keranjang.splice(i, 1)[0];
+  renderKeranjang(); 
+  if (removed) showNotif(`${removed.nama} ${removed.varian} dihapus`, "info", 1800);
+}
+function ubahQty(i, val) { const qty = parseInt(val); keranjang[i].qty = (isNaN(qty) || qty < 1) ? 1 : qty; renderKeranjang(); showNotif("Jumlah diperbarui", "info", 1200); }
+
+function hitungKembalian() {
+  const total = keranjang.reduce((sum, i) => sum + i.harga * i.qty, 0);
+  const uangInput = document.getElementById("uangPembeli").value.replace(/\D/g, "");
+  const uang = parseInt(uangInput) || 0;
+  const kembali = uang - total;
+  document.getElementById("kembalian").textContent = formatRupiah(kembali >= 0 ? kembali : 0);
+}
+
+// === CETAK NOTA ===
+const encoder = new TextEncoder();
+async function cetakNota() {
+  if (keranjang.length === 0) { showNotif("Keranjang masih kosong!", "error", 2200); return; }
+  let nota = "=== WPA MARKET ===\n" + new Date().toLocaleString("id-ID") + "\n------------------------------\n";
+  keranjang.forEach(i => {
+    nota += `${i.nama} - ${i.varian}\n`;
+    const qtyStr = String(i.qty).padStart(3, " ");
+    const hargaStr = ("" + formatRupiah(i.harga)).padStart(3, " ");
+    const totalStr = ("" + formatRupiah(i.harga * i.qty)).padStart(12, " ");
+    nota += `${qtyStr} x ${hargaStr}  ${totalStr}\n`;
+  });
+  nota += "------------------------------\n";
+  nota += "Total   : " + document.getElementById("totalBelanja").textContent + "\n";
+  nota += "Uang    : " + (document.getElementById("uangPembeli").value || "0") + "\n";
+  nota += "Kembali : " + document.getElementById("kembalian").textContent + "\n";
+  nota += "------------------------------\nwa : 0852 3480 3820\n\n\n";
+
+  const transaksi = {
+    tanggal: new Date().toLocaleString("id-ID"),
+    total: document.getElementById("totalBelanja").textContent,
+    uang: document.getElementById("uangPembeli").value || "0",
+    kembali: document.getElementById("kembalian").textContent,
+    detail: [...keranjang]
+  };
+  riwayat.push(transaksi);
+  localStorage.setItem("riwayatTransaksi", JSON.stringify(riwayat));
+  renderRiwayat();
+
+  try {
+    // coba cetak via USB (WebUSB)
+    const device = await navigator.usb.requestDevice({ filters: [{}] });
+    await device.open();
+    if (device.configuration === null) await device.selectConfiguration(1);
+    const iface = device.configuration.interfaces[0];
+    await device.claimInterface(iface.interfaceNumber);
+    let endpointOut = null;
+    iface.alternates[0].endpoints.forEach(ep => { if (ep.direction === "out") endpointOut = ep.endpointNumber; });
+    if (endpointOut === null) throw new Error("Endpoint OUT tidak ditemukan");
+    const data = encoder.encode(nota);
+    await device.transferOut(endpointOut, data);
+    showNotif("Nota berhasil dicetak via USB!", "success", 2500);
+  } catch (err) {
+    // tampilkan notif error (tetap simpan transaksi)
+    showNotif("Gagal mencetak: " + (err && err.message ? err.message : err), "error", 3500);
+    console.warn(err);
+  }
+
+  keranjang = [];
+  renderKeranjang();
+  document.getElementById("uangPembeli").value = "";
+  document.getElementById("cariProduk").focus();
+}
+
+// === RIWAYAT ===
+function renderRiwayat() {
+  const tbody = document.querySelector("#tabelRiwayat tbody");
+  tbody.innerHTML = "";
+  for (let i = riwayat.length - 1; i >= 0; i--) {
+    const r = riwayat[i];
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${r.tanggal}</td>
+      <td>Rp ${r.total}</td>
+      <td>Rp ${r.uang}</td>
+      <td>Rp ${r.kembali}</td>
+      <td>
+        <button onclick="lihatDetail(${i})">Lihat</button>
+        <button onclick="editTransaksi(${i})">Edit</button>
+      </td>`;
+    tbody.appendChild(tr);
+  }
+}
+
+function lihatDetail(i) {
+  const r = riwayat[i];
+  let detail = `=== Transaksi ===\n${r.tanggal}\n\n`;
+  r.detail.forEach(d => {
+    detail += `${d.nama} - ${d.varian}\n${d.qty} x Rp${formatRupiah(d.harga)} = Rp${formatRupiah(d.harga*d.qty)}\n`;
+  });
+  detail += `\nTotal: Rp ${r.total}\nUang: Rp ${r.uang}\nKembali: Rp ${r.kembali}\n`;
+  alert(detail);
+}
+
+function editTransaksi(i) {
+  keranjang = JSON.parse(JSON.stringify(riwayat[i].detail));
+  renderKeranjang();
+  document.getElementById("uangPembeli").value = riwayat[i].uang;
+  hitungKembalian();
+  showNotif("Transaksi dimuat ke keranjang (edit).", "info", 1800);
+}
+
+// === Event listener ===
+const inputCari = document.getElementById("cariProduk");
+inputCari.addEventListener("input", e => { renderHasilCari(e.target.value); });
+
+// ✅ Scan pakai Enter
+inputCari.addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    const val = e.target.value.trim();
+    if (val === "") return;
+    renderHasilCari(val);
+
+    const produk = produkDB.find(p => p.barcode === val || p.variasi.some(v => v.barcode === val));
+    if (produk) {
+      let varian = produk.variasi.find(v => v.barcode === val);
+      if (varian) {
+        tambahKeranjang(produk.nama, varian.nama, "ecer", varian.harga);
+      } else {
+        // jika scan barcode karton/pack yang ada di produk.barcode -> fallback
+        // cari yang matching produk.barcode; kalau tidak ada, coba add bulk default (karton) jika tersedia
+        const bulk = bulkKeys.find(bk => typeof produk[bk.key] !== "undefined");
+        if (bulk) {
+          const hargaBulk = produk[bulk.key];
+          tambahKeranjang(produk.nama, bulk.label + (produk.isi ? ` (isi ${produk.isi})` : ""), bulk.key, hargaBulk);
+        } else {
+          tambahKeranjang(produk.nama, "", "ecer", produk.variasi[0]?.harga || 0);
+        }
+      }
+      playSuara(suaraScan); // ✅ Suara berhasil
+      showNotif("Scan berhasil — produk ditambahkan.", "success", 1600);
+    } else {
+      playSuara(suaraGagal); // ❌ Suara gagal
+      showNotif("Barcode/produk tidak ditemukan.", "error", 2200);
+    }
+    e.target.value = "";
+  }
+});
+
+renderRiwayat();
 </script>
 
 </body>
